@@ -26,8 +26,29 @@ class _OrderScreenState extends State<OrderScreen> {
   var searchController = TextEditingController();
   var notesController = TextEditingController();
   List<OrderModel> searchOrder = [];
-  List<String> list = ["4", "5"];
   List<String> listStatus = ["pending", "accept", "refuse", "delay"];
+
+  List<Map<String,dynamic>> list = [
+    {
+      "name":"تصدير",
+      "icon":Transform.rotate(
+          angle: 3.14/-2,child: Icon(Icons.logout))
+    },
+    {
+      "name":"استيراد",
+      "icon":Transform.rotate(
+          angle: 3.14/2,
+          child: Icon(Icons.login))
+    },
+    {
+      "name":"تنزيل نموذج",
+      "icon": Icon(Icons.download)
+    },{
+      "name":"تنزيل pdf",
+      "icon": Icon(Icons.download)
+    },
+  ];
+
   var formKey = GlobalKey<FormState>();
   var mandobeFormKey = GlobalKey<FormState>();
   var notesFormKey = GlobalKey<FormState>();
@@ -36,6 +57,9 @@ class _OrderScreenState extends State<OrderScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width <= 800;
+    int crossAxisCount = MediaQuery.of(context).size.width ~/ 400;
+    int crossAxisCountMobile = MediaQuery.of(context).size.width ~/ 210;
     return BlocConsumer<AppCubit, AppStats>(
         listener: (context, state) {},
         builder: (context, state) {
@@ -118,6 +142,15 @@ class _OrderScreenState extends State<OrderScreen> {
                                                                   .text) ||
                                                           element.city!.contains(
                                                               searchController
+                                                                  .text)||
+                                                          element.orderCode!.contains(
+                                                              searchController
+                                                                  .text)||
+                                                          element.phone!.contains(
+                                                              searchController
+                                                                  .text)||
+                                                          element.phoneTow!.contains(
+                                                              searchController
                                                                   .text) ||
                                                           element.name!.contains(
                                                               searchController
@@ -170,153 +203,116 @@ class _OrderScreenState extends State<OrderScreen> {
                                   if(usermodel!.type=="ادمن")
                                   Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                                    child: Row(
-                                      spacing: 10,
-                                      children: [
-                                      Expanded(child: InkWell(
-                                        onTap: () {
-                                          cubit.exportOrdersToExcel(cubit
-                                              .filteredOrders!);
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 15, vertical: 13),
-                                          decoration: BoxDecoration(
-                                              color: Colors.grey.shade100,
-                                              borderRadius: BorderRadius.circular(5)),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            spacing: 10,
-                                            children: [
-                                              Transform.rotate(
-                                                  angle: 3.14/-2,child: Icon(Icons.logout)),
-                                              Text(
-                                                "تصدير",
-                                                style: TextStyle(
-                                                    color: defaultColor,
-                                                    fontSize: screenWidth>600?18:15,
-                                                    fontWeight: FontWeight.w500),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),)  ,
-                                      Expanded(child: InkWell(
-                                        onTap: () {
-                                          setState(() {
-                                            cubit.consoleLogs=[];
-                                          });
-                                          showDialog(
-                                              context: context,
-                                              builder: (context) => AlertDialog.adaptive(
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                title: Align(
-                                                  alignment: AlignmentDirectional.topEnd,
-                                                  child: Container(
-                                                      decoration: BoxDecoration(
-                                                          color: defaultColor, borderRadius: BorderRadius.circular(5)),
-                                                      child: IconButton(
-                                                        onPressed: () {
-                                                          Navigator.pop(context);
-                                                        },
-                                                        icon:const Icon(
-                                                          Icons.close,
-                                                          color: Colors.white,
-                                                        ),
-                                                      )),
-                                                ),
-                                                content: Column(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Container(
-                                                      width: 500,
-                                                      height: 500,
-                                                      child: ConditionalBuilder(
-                                                          condition: cubit.consoleLogs.isEmpty,
-                                                          builder: (context)=>InkWell(
-                                                            onTap: (){
-                                                              cubit.importOrdersFromExcel();
-                                                            },
-                                                            child: Center(
-                                                              child: Text("اضغط هنا لاستيراد الملف ",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
-                                                            ),
-                                                          ),
-                                                          fallback: (context)=>Container(
-                                                            color: Colors.grey[200],
-                                                            padding: EdgeInsets.all(10),
-                                                            child: ListView.builder(
-                                                              itemCount: cubit.consoleLogs.length,
-                                                              itemBuilder: (context, index) {
-                                                                return Align(
-                                                                  alignment: Alignment.centerRight, // النص على اليمين
-                                                                  child: Text(
-                                                                    cubit.consoleLogs[index],
-                                                                    style: TextStyle(fontSize: 14, color: Colors.black87),
-                                                                    textAlign: TextAlign.right, // محاذاة النص لليمين
-                                                                  ),
-                                                                );
+                                    child: GridView.builder(
+                                        shrinkWrap: true,
+                                        gridDelegate:
+                                        SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount:isMobile? crossAxisCountMobile:crossAxisCount,
+                                            childAspectRatio:
+                                            isMobile ? 1 / 0.4 : 1/0.15),
+                                        physics: NeverScrollableScrollPhysics(),
+                                        itemCount: list.length,
+                                        itemBuilder: (context, index) =>  Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5,vertical: 5),
+                                          child: InkWell(
+                                            onTap: () {
+                                              if(index==0){
+                                                cubit.exportOrdersToExcel(cubit
+                                                    .filteredOrders!);
+                                              }else if(index==1){
+                                                setState(() {
+                                                  cubit.consoleLogs=[];
+                                                });
+                                                showDialog(
+                                                    context: context,
+                                                    builder: (context) => AlertDialog.adaptive(
+                                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                      title: Align(
+                                                        alignment: AlignmentDirectional.topEnd,
+                                                        child: Container(
+                                                            decoration: BoxDecoration(
+                                                                color: defaultColor, borderRadius: BorderRadius.circular(5)),
+                                                            child: IconButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(context);
                                                               },
-                                                            ),
-                                                          ),
+                                                              icon:const Icon(
+                                                                Icons.close,
+                                                                color: Colors.white,
+                                                              ),
+                                                            )),
                                                       ),
-                                                    )
-                                                  ],
-                                                ),
-                                              ));
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 15, vertical: 13),
-                                          decoration: BoxDecoration(
-                                              color: Colors.grey.shade100,
-                                              borderRadius: BorderRadius.circular(5)),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            spacing: 10,
-                                            children: [
-                                          Transform.rotate(
-                                          angle: 3.14/2,
-                                          child: Icon(Icons.login)),
-                                              Text(
-                                                "استيراد",
-                                                style: TextStyle(
-                                                    color: defaultColor,
-                                                    fontSize: screenWidth>600?18:15,
-                                                    fontWeight: FontWeight.w500),
+                                                      content: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Container(
+                                                            width: 500,
+                                                            height: 500,
+                                                            child: ConditionalBuilder(
+                                                              condition: cubit.consoleLogs.isEmpty,
+                                                              builder: (context)=>InkWell(
+                                                                onTap: (){
+                                                                  cubit.importOrdersFromExcel();
+                                                                },
+                                                                child: Center(
+                                                                  child: Text("اضغط هنا لاستيراد الملف ",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
+                                                                ),
+                                                              ),
+                                                              fallback: (context)=>Container(
+                                                                color: Colors.grey[200],
+                                                                padding: EdgeInsets.all(10),
+                                                                child: ListView.builder(
+                                                                  itemCount: cubit.consoleLogs.length,
+                                                                  itemBuilder: (context, index) {
+                                                                    return Align(
+                                                                      alignment: Alignment.centerRight, // النص على اليمين
+                                                                      child: Text(
+                                                                        cubit.consoleLogs[index],
+                                                                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                                                                        textAlign: TextAlign.right, // محاذاة النص لليمين
+                                                                      ),
+                                                                    );
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          )
+                                                        ],
+                                                      ),
+                                                    ));
+                                              }else if(index==2){
+                                                cubit.downloadSheet();
+                                              }else if(index==3){
+                                                printSelectedOrders(cubit
+                                                    .filteredOrders!);
+                                              }
+
+                                            },
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 15, vertical: 13),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.grey.shade100,
+                                                  borderRadius: BorderRadius.circular(5)),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                spacing: 10,
+                                                children: [
+                                                  list[index]["icon"],
+                                                  Text(
+                                                    list[index]["name"],
+                                                    style: TextStyle(
+                                                        color: defaultColor,
+                                                        fontSize: screenWidth>600?18:15,
+                                                        fontWeight: FontWeight.w500),
+                                                  ),
+                                                ],
                                               ),
-                                            ],
+                                            ),
                                           ),
-                                        ),
-                                      ),)  ,
-                                      Expanded(child: InkWell(
-                                        onTap: () {
-                                          cubit.downloadSheet();
-                                        },
-                                        child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 15, vertical: 13),
-                                          decoration: BoxDecoration(
-                                              color: Colors.grey.shade100,
-                                              borderRadius: BorderRadius.circular(5)),
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            spacing: 10,
-                                            children: [
-                                          Icon(Icons.download),
-                                              Text(
-                                                "تنزيل نموذج",
-                                                style: TextStyle(
-                                                    color: defaultColor,
-                                                    fontSize: screenWidth>600?18:15,
-                                                    fontWeight: FontWeight.w500),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),)  ,
-                                      ],
-                                    ),
+                                        ),),
                                   ),
+
                                   const SizedBox(
                                     height: 15,
                                   ),

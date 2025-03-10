@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:future/model/request_model.dart';
+import 'package:future/modules/accountant/accountant_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:excel/excel.dart';
@@ -33,11 +35,17 @@ import '../model/user_model.dart';
 import '../modules/code/code_screen.dart';
 import '../modules/locations/location_screen.dart';
 import '../modules/mandobe/mandobe_screen.dart';
+import '../modules/merchants/merchants_screen.dart';
+import '../modules/my_balance/my_balance_screen.dart';
+import '../modules/my_balance_admin/my_balance_admin_screen.dart';
 import '../modules/orders/orders_screen.dart';
+import '../modules/requsts/requests_screen.dart';
+import '../modules/store/pending_store_screen.dart';
 import '../modules/store/store_screen.dart';
 import 'package:future/shared/widgets/sut_excel.dart'
-if (dart.library.html)'package:future/shared/widgets/web_export.dart'
-if (dart.library.io) 'package:future/shared/widgets/non_web_export.dart';
+    if (dart.library.html) 'package:future/shared/widgets/web_export.dart'
+    if (dart.library.io) 'package:future/shared/widgets/non_web_export.dart';
+
 class AppCubit extends Cubit<AppStats> {
   AppCubit() : super(AppInitialStats());
 
@@ -49,7 +57,13 @@ class AppCubit extends Cubit<AppStats> {
     const MandobeScreen(),
     const LocationScreen(),
     const StoreScreen(),
+    const PendingStoreScreen(),
     const CodeScreen(),
+    const MerchantsScreen(),
+    const MyBalanceAdminScreen(),
+    const MyBalanceScreen(),
+    const AccountantScreen(),
+    const RequestsScreen(),
     const SettingScreen()
   ];
   var nameController = TextEditingController();
@@ -62,14 +76,15 @@ class AppCubit extends Cubit<AppStats> {
   var quantityController = TextEditingController(text: "1");
   var priceController = TextEditingController();
   var detailsController = TextEditingController();
-  String? mandobeValue;
-  String? codeValue;
-  String labelAppBar="الاوردرات";
+  var locationController = TextEditingController();
+  UserModel? mandobeValue;
+  UserModel? codeValue;
+  String labelAppBar = "الاوردرات";
   MattressModel? mattressValue;
   GiftModel? giftValue;
   GiftModel? orderSuppliersValue;
   String? cityValue;
-  int cityPrice=0;
+  int cityPrice = 0;
   SuppliersModel? suppliersValue;
   bool menu = false;
   bool menuText = false;
@@ -105,18 +120,21 @@ class AppCubit extends Cubit<AppStats> {
 
   List<MattressModel> mattressList = [];
   List<OrderDetailsModel> giftList = [];
+  List<String> uIdNames = [];
   List<OrderDetailsModel> orderSuppliersList = [];
   List<String> listStatus = [
     "مع شركة الشحن",
     "تم تسليم العميل",
     "مرتجع",
     "في المكتب",
+    "مؤجل",
   ];
   List<String> listStatusOrder = [
     "مع شركة الشحن",
     "تم تسليم العميل",
     "مرتجع",
     "في المكتب",
+    "مؤجل",
     "كل الاوردرات",
   ];
   String? monthValueMandobe = "${DateTime.now().month}";
@@ -146,22 +164,26 @@ class AppCubit extends Cubit<AppStats> {
   int day = DateTime.now().day;
   int? lastDay;
   List<OrderModel>? filteredOrders;
+  List<OrderModel>? filteredOrdersAccountant;
   List<String> uniqueMonth = [];
   List<String> uniqueYears = [];
-  int total=0;
+  int total = 0;
   List<String> consoleLogs = [];
 //######### End Variable ########
 
 //######### Start Main Function ########
-  void sumTotal(){
-    total = giftList.fold(0, (sum, order) => sum + order.total!)+cityPrice;
+  void sumTotal() {
+    total = giftList.fold(0, (sum, order) => sum + order.total!) + cityPrice;
   }
-  void changeLocation(String value,int price) {
+
+  void changeLocation(String value, int price) {
     cityValue = value;
     cityPrice = price;
+    locationController.text=value;
     sumTotal();
     emit(ChangeLocationState());
   }
+
   void showAllChanges(bool show) {
     showAll = show;
     emit(ShowAllState());
@@ -245,6 +267,10 @@ class AppCubit extends Cubit<AppStats> {
     required OrderDetailsModel orderDetailsModel,
   }) {
     giftList.add(orderDetailsModel);
+    if(!uIdNames.contains(orderDetailsModel.uid)){
+      uIdNames.add(orderDetailsModel.uid!);
+    }
+    print(uIdNames);
     sumTotal();
     emit(GetAddToListState());
   }
@@ -381,25 +407,27 @@ class AppCubit extends Cubit<AppStats> {
     emit(ChangeLengthOrdersChooseState());
   }
 
-  void addOrder({
-    required String name,
-    required String phone,
-    required String phoneTow,
-    required String address,
-    required String city,
-    required String mandobeName,
-    required String code,
-    required String total,
-    required String dateTime,
-    required List<OrderDetailsModel> orderDetails
-  }) async {
+  void addOrder(
+      {required String name,
+      required String phone,
+      required String phoneTow,
+      required String address,
+      required String city,
+      required int priceCity,
+      required String mandobeName,
+      required String uIdMandobeName,
+      required String code,
+      required String uIdCode,
+      required String total,
+      required String dateTime,
+      required List<OrderDetailsModel> orderDetails}) async {
     emit(OnLoadingAddOrderState());
     removeParameter();
     CollectionReference collectionRef =
         FirebaseFirestore.instance.collection("orders");
     String newId = collectionRef.doc().id;
     OrderModel model = OrderModel(
-        orderCode: orderCode.orderCode.toString(),
+        orderCode: orderCode.orderCode.toString()??"1",
         name: name,
         phone: phone,
         phoneTow: phoneTow,
@@ -414,7 +442,11 @@ class AppCubit extends Cubit<AppStats> {
         status: "في المكتب",
         sells: false,
         mandobe: false,
+        uIdNames: uIdNames,
         nameAdd: usermodel!.name!,
+        uIdCode: uIdCode,
+        uIdMandobeName:uIdMandobeName ,
+        priceCity: priceCity,
         nameEdit: "");
 
     try {
@@ -422,6 +454,7 @@ class AppCubit extends Cubit<AppStats> {
         giftList.clear();
         cityValue = null;
         codeValue = null;
+        this.total = 0;
         getGift();
         // getOrders();
         updateOrderCode(id: orderCode.id!);
@@ -469,6 +502,7 @@ class AppCubit extends Cubit<AppStats> {
       persistenceEnabled: true, // تفعيل التخزين المؤقت
     );
 
+
     var query = FirebaseFirestore.instance
         .collection("orders")
         .orderBy("dateTime", descending: true);
@@ -481,11 +515,16 @@ class AppCubit extends Cubit<AppStats> {
       query = query.where("mandobeName", isEqualTo: usermodel!.name);
     }
 
+    if (usermodel != null && usermodel!.type == "تاجر") {
+      query =  query.where("uIdNames", arrayContains:usermodel!.uId);
+    }
+
     // جلب البيانات من التخزين المؤقت أولاً
     query.get(const GetOptions(source: Source.cache)).then((snapshot) {
       orders =
           snapshot.docs.map((doc) => OrderModel.fromJson(doc.data())).toList();
       getfilteredOrders();
+      getfilteredOrdersAccountant();
       getYear();
       getMonth();
 
@@ -561,174 +600,91 @@ class AppCubit extends Cubit<AppStats> {
     required String status,
     required String id,
     required List<OrderDetailsModel> list,
+    required OrderModel order,
   }) async {
-    FirebaseFirestore.instance
-        .collection("orders")
-        .doc(id)
-        .update({"status": status});
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final batch = firestore.batch();
+
+    // تحديث حالة الطلب
+    batch.update(firestore.collection("orders").doc(id), {"status": status});
+
+    // تحديث المخزون
+    void updateProductStock(int multiplier) {
+      for (var gift in list) {
+        batch.update(firestore.collection("product").doc(gift.id), {
+          'count': FieldValue.increment(gift.count! * multiplier)
+        });
+      }
+    }
+
+    // تحديث رصيد المستخدمين
+    void updateUserBalances(int multiplier) {
+      for (var gift in list) {
+        var totalTager = gift.tagerPrice! * gift.count! * multiplier;
+        var totalSells = (gift.price! - gift.oldPrice!) * gift.count! * multiplier;
+        var totalAdmin = (gift.oldPrice! - gift.tagerPrice!) * gift.count! * multiplier;
+
+        batch.update(firestore.collection("users").doc(gift.uid), {
+          'total_balance': FieldValue.increment(totalTager)
+        });
+        batch.update(firestore.collection("users").doc(order.uIdCode), {
+          'total_balance': FieldValue.increment(totalSells)
+        });
+        batch.update(firestore.collection("userAdmin").doc(usersAdmin[0].uId), {
+          'total_balance': FieldValue.increment(totalAdmin)
+        });
+      }
+      batch.update(firestore.collection("users").doc(order.uIdMandobeName), {
+        'total_balance': FieldValue.increment(order.priceCity! * multiplier)
+      });
+    }
+
+    // معالجة التغيرات حسب الحالة
     if (lastStatus == "مع شركة الشحن") {
-      if (status == "مع شركة الشحن") {
-      } else if (status == "مرتجع") {
-        if (list.isNotEmpty) {
-          for (var gift in list) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection("product")
-                  .doc(gift.id)
-                  .update({'count': FieldValue.increment(gift.count!)});
-            } catch (error) {
-              emit(CreateOrderErrorState());
-              return;
-            }
-          }
-        }
+      if (status == "مرتجع" || status == "في المكتب") {
+        updateProductStock(1);
       } else if (status == "تم تسليم العميل") {
-      } else if (status == "في المكتب") {
-        if (list.isNotEmpty) {
-          for (var gift in list) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection("product")
-                  .doc(gift.id)
-                  .update({'count': FieldValue.increment(gift.count!)});
-            } catch (error) {
-              emit(CreateOrderErrorState());
-              return;
-            }
-          }
-        }
+        updateUserBalances(1);
       }
     } else if (lastStatus == "مرتجع") {
-      if (status == "مع شركة الشحن") {
-        if (list.isNotEmpty) {
-          for (var gift in list) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection("product")
-                  .doc(gift.id)
-                  .update({'count': FieldValue.increment(-gift.count!)});
-            } catch (error) {
-              emit(CreateOrderErrorState());
-              return;
-            }
-          }
-        }
-      } else if (status == "مرتجع") {
-      } else if (status == "تم تسليم العميل") {
-        if (list.isNotEmpty) {
-          for (var gift in list) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection("product")
-                  .doc(gift.id)
-                  .update({'count': FieldValue.increment(-gift.count!)});
-            } catch (error) {
-              emit(CreateOrderErrorState());
-              return;
-            }
-          }
-        }
-      } else if (status == "في المكتب") {}
+      if (status == "مع شركة الشحن" || status == "تم تسليم العميل"||status == "مؤجل") {
+        updateProductStock(-1);
+        if (status == "تم تسليم العميل")  updateUserBalances(1);
+      }
     } else if (lastStatus == "تم تسليم العميل") {
-      if (status == "مع شركة الشحن") {
-      } else if (status == "مرتجع") {
-        if (list.isNotEmpty) {
-          for (var gift in list) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection("product")
-                  .doc(gift.id)
-                  .update({'count': FieldValue.increment(gift.count!)});
-            } catch (error) {
-              emit(CreateOrderErrorState());
-              return;
-            }
-          }
-        }
-      } else if (status == "تم تسليم العميل") {
-      } else if (status == "في المكتب") {
-        if (list.isNotEmpty) {
-          for (var gift in list) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection("product")
-                  .doc(gift.id)
-                  .update({'count': FieldValue.increment(gift.count!)});
-            } catch (error) {
-              emit(CreateOrderErrorState());
-              return;
-            }
-          }
-        }
+      if (status == "مع شركة الشحن" || status == "مرتجع"|| status == "في المكتب"||status == "مؤجل") {
+        updateUserBalances(-1);
+        if (status == "مرتجع"|| status == "في المكتب") updateProductStock(1);
       }
     } else if (lastStatus == "في المكتب") {
-      if (status == "مع شركة الشحن") {
-        if (list.isNotEmpty) {
-          for (var gift in list) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection("product")
-                  .doc(gift.id)
-                  .update({'count': FieldValue.increment(-gift.count!)});
-            } catch (error) {
-              emit(CreateOrderErrorState());
-              return;
-            }
-          }
-        }
-      } else if (status == "مرتجع") {
+      if (status == "مع شركة الشحن"||status == "مؤجل") {
+        updateProductStock(-1);
       } else if (status == "تم تسليم العميل") {
-        if (list.isNotEmpty) {
-          for (var gift in list) {
-            try {
-              await FirebaseFirestore.instance
-                  .collection("product")
-                  .doc(gift.id)
-                  .update({'count': FieldValue.increment(-gift.count!)});
-            } catch (error) {
-              emit(CreateOrderErrorState());
-              return;
-            }
-          }
+        updateProductStock(-1);
+        updateUserBalances(1);
+      }else if (lastStatus == "مؤجل") {
+        if (status == "مرتجع" || status == "في المكتب") {
+          updateProductStock(1);
+        } else if (status == "تم تسليم العميل") {
+          updateUserBalances(1);
         }
-      } else if (status == "في المكتب") {}
+      }
     }
-    if (status == "مع شركة الشحن") {
-      if (list.isNotEmpty) {
-        for (var gift in list) {
-          try {
-            await FirebaseFirestore.instance
-                .collection("product")
-                .doc(gift.id)
-                .update({'count': FieldValue.increment(-gift.count!)});
-          } catch (error) {
-            emit(CreateOrderErrorState());
-            return;
-          }
-        }
-      }
-    } else if (status == "مرتجع") {
-      if (list.isNotEmpty) {
-        for (var gift in list) {
-          try {
-            await FirebaseFirestore.instance
-                .collection("product")
-                .doc(gift.id)
-                .update({'count': FieldValue.increment(gift.count!)});
-          } catch (error) {
-            emit(CreateOrderErrorState());
-            return;
-          }
-        }
-      }
+
+    // تنفيذ التحديثات دفعة واحدة
+    try {
+      await batch.commit();
+    } catch (error) {
+      emit(CreateOrderErrorState());
     }
   }
+
 
   void getfilteredOrders() {
     bool isDelay = statusOrderFilter == "كل الاوردرات";
     if (isDelay) {
       filteredOrders = orders!;
-    }else{
+    } else {
       filteredOrders = orders!.where((order) {
         DateTime orderDate = DateTime.parse(order.dateTime!);
         bool matchesStatus = order.status == statusOrderFilter;
@@ -742,6 +698,14 @@ class AppCubit extends Cubit<AppStats> {
         return matchesStatus && matchesMonth && matchesYear;
       }).toList();
     }
+  }
+
+  void getfilteredOrdersAccountant() {
+    filteredOrdersAccountant = orders!.where((order) {
+      bool matchesStatus = order.status == "تم تسليم العميل";
+
+      return matchesStatus;
+    }).toList();
   }
 
   //######### End Order Function ########
@@ -1038,12 +1002,13 @@ class AppCubit extends Cubit<AppStats> {
       required String lastMandobe,
       required String lastStatus,
       required String id,
+        required OrderModel order,
       required List<OrderDetailsModel> list}) async {
     if (lastMandobe == "") {
       FirebaseFirestore.instance.collection("orders").doc(id).update(
           {"mandobeName": mandobe, "dateTime": DateTime.now().toString()});
       updateStatus(
-          lastStatus: lastStatus, status: "مع شركة الشحن", id: id, list: list);
+          lastStatus: lastStatus, status: "مع شركة الشحن", id: id, list: list, order: order);
     } else {
       FirebaseFirestore.instance
           .collection("orders")
@@ -1116,6 +1081,7 @@ class AppCubit extends Cubit<AppStats> {
   }
 
   List<UserModel>? mandobe;
+  List<UserModel>? merchants;
   void getMandobe() {
     emit(OnLoadingGetMandobeState());
     FirebaseFirestore.instance
@@ -1140,46 +1106,147 @@ class AppCubit extends Cubit<AppStats> {
     required String image,
     required String link,
     required String price,
+    required String price2,
     required int count,
+    required String uid,
+    required String nameAdd,
+    required String type,
   }) {
     emit(OnLoadingAddGiftState());
-    CollectionReference collectionRef =
-        FirebaseFirestore.instance.collection("product");
+    late CollectionReference collectionRef;
+    if (type == "تاجر") {
+      collectionRef = FirebaseFirestore.instance.collection("pending_products");
+    } else {
+      collectionRef = FirebaseFirestore.instance.collection("product");
+    }
+
     String newId = collectionRef.doc().id;
-    GiftModel model =
-        GiftModel(
-            name: name,
-            count: count,
-            notes: notes,
-            image: image,
-            link: link,
-            id: newId,
-            code: codeProduct
-        );
+    GiftModel model = GiftModel(
+      name: name,
+      count: count,
+      notes: notes,
+      image: image,
+      price: price,
+      price2: price2,
+      link: link,
+      id:  newId,
+      code: codeProduct,
+      nameAdd: nameAdd,
+      uid: uid,
+      edit: "",
+    );
 
     collectionRef.doc(newId).set(model.toMap()).then((value) {
       getGift();
+      getPendingGift();
       emit(CreateGiftSuccessState());
     }).catchError((error) {
       emit(CreateGiftErrorState());
     });
   }
 
+  void addGiftPending({
+    required String name,
+    required String notes,
+    required String image,
+    required String link,
+    required String price,
+    required String price2,
+    required int count,
+    required String uid,
+    required String id,
+    required int code,
+    required String nameAdd,
+    required String type,
+  }) {
+    emit(OnLoadingAddGiftPendingState());
+    late CollectionReference collectionRef= FirebaseFirestore.instance.collection("pending_products");
+    late CollectionReference collectionRef2= FirebaseFirestore.instance.collection("product");
+
+    GiftModel model = GiftModel(
+      name: name,
+      count: count,
+      notes: notes,
+      image: image,
+      price: price,
+      price2: price2,
+      link: link,
+      id: id ,
+      code: code,
+      nameAdd: nameAdd,
+      uid: uid,
+      edit: "",
+    );
+
+    collectionRef2.doc(id).set(model.toMap()).then((value) {
+      collectionRef.doc(id).delete().then((value){
+        getGift();
+        getPendingGift();
+        emit(CreateGiftPendingSuccessState());
+      });
+
+    }).catchError((error) {
+      emit(CreateGiftPendingErrorState());
+    });
+  }
+
   List<GiftModel>? gift;
   void getGift() {
     emit(OnLoadingGetGiftState());
-    FirebaseFirestore.instance
-        .collection("product")
-        .snapshots()
-        .listen((event) {
-      gift = [];
-      for (var element in event.docs) {
-        gift!.add(GiftModel.fromJson(element.data()));
-      }
+
+    var query =
+        FirebaseFirestore.instance.collection("product").orderBy("code");
+
+    if (usermodel != null && usermodel!.type == "تاجر") {
+      query = query.where("uid", isEqualTo: usermodel!.uId);
+    }
+
+    // جلب البيانات من التخزين المؤقت أولاً
+    query.get(const GetOptions(source: Source.cache)).then((snapshot) {
+      gift =
+          snapshot.docs.map((doc) => GiftModel.fromJson(doc.data())).toList();
       gift!.sort((a, b) => b.code!.compareTo(a.code!));
-      codeProduct = event.docs.length + 1;
+      codeProduct = snapshot.docs.length + 1;
+
       emit(GetGiftSuccessState());
+
+      // البدء بالاستماع للتحديثات في حال توفر اتصال
+      query.snapshots().listen((event) {
+        gift = event.docs.map((doc) => GiftModel.fromJson(doc.data())).toList();
+        gift!.sort((a, b) => b.code!.compareTo(a.code!));
+        codeProduct = event.docs.length + 1;
+        emit(GetGiftSuccessState());
+      });
+    }).catchError((error) {
+      emit(GetOrderErrorState());
     });
+  }
+
+  List<GiftModel>? pendingGift;
+  void getPendingGift() {
+    emit(OnLoadingGetGiftPendingState());
+    if (usermodel != null && usermodel!.type == "تاجر") {
+      FirebaseFirestore.instance
+          .collection("pending_products")
+          .where("uid", isEqualTo: usermodel!.uId)
+          .snapshots()
+          .listen((event) {
+        pendingGift = [];
+        for (var element in event.docs) {
+          pendingGift!.add(GiftModel.fromJson(element.data()));
+        }
+      });
+    }else{
+      FirebaseFirestore.instance
+          .collection("pending_products")
+          .snapshots()
+          .listen((event) {
+        pendingGift = [];
+        for (var element in event.docs) {
+          pendingGift!.add(GiftModel.fromJson(element.data()));
+        }
+      });
+    }
   }
 
   void updateGiftProduct({
@@ -1192,6 +1259,23 @@ class AppCubit extends Cubit<AppStats> {
         .doc(id)
         .update({'name': name, "count": count}).then((value) => getGift());
     emit(UpdateGiftSuccessState());
+  }
+
+  void deleteGift({required String id}) {
+    FirebaseFirestore.instance
+        .collection("product")
+        .doc(id)
+        .delete()
+        .then((value) => getGift());
+    emit(DeleteGiftSuccessState());
+  }
+  void deleteGiftPending({required String id}) {
+    FirebaseFirestore.instance
+        .collection("pending_products")
+        .doc(id)
+        .delete()
+        .then((value) => getPendingGift());
+    emit(DeleteGiftSuccessState());
   }
 
   void addShipping({
@@ -1242,23 +1326,6 @@ class AppCubit extends Cubit<AppStats> {
     emit(UpdateShippingPriceSuccessState());
   }
 
-  void updateMattress({
-    required String id,
-    required int count,
-  }) {
-    emit(OnLoadingAddGiftState());
-
-    FirebaseFirestore.instance
-        .collection("mattress")
-        .doc(id)
-        .update({'count': FieldValue.increment(count)}).then((value) {
-      getMattress();
-      emit(UpdateMattressSuccessState());
-    }).catchError((error) {
-      emit(UpdateMattressErrorState());
-    });
-  }
-
   void updateGift({
     required String id,
     required int count,
@@ -1281,6 +1348,54 @@ class AppCubit extends Cubit<AppStats> {
     }).catchError((error) {
       emit(UpdateGiftErrorState());
     });
+  }
+
+  void updateStore({
+    required String id,
+    required String file,
+    required String name,
+    required String notes,
+    required String link,
+    required String price,
+    required String price2,
+    required int count,
+    required String uid,
+    required String nameAdd,
+    required int code,
+  }) {
+    emit(OnLoadingAddGiftState());
+    GiftModel model = GiftModel(
+      name: name,
+      count: count,
+      notes: notes,
+      image: file,
+      price: price,
+      price2: price2,
+      link: link,
+      id: id,
+      code: code,
+      nameAdd: nameAdd,
+      uid: uid,
+      edit: "",
+    );
+    if (usermodel!.type == "تاجر") {
+      FirebaseFirestore.instance
+          .collection("pending_products")
+          .doc(id)
+          .set(model.toMap())
+          .then((value) {
+        emit(UpdateGiftAddSuccessState());
+      }).catchError((error) {
+        emit(UpdateGiftAddErrorState());
+      });
+    } else {
+      FirebaseFirestore.instance.collection("product").doc(id).set(model.toMap()).then((value) {
+        getGift();
+        emit(UpdateGiftSuccessState());
+      }).catchError((error) {
+        emit(UpdateGiftErrorState());
+      });
+    }
   }
 
   List<GiftDetailsModel> giftDetails = [];
@@ -1437,9 +1552,9 @@ class AppCubit extends Cubit<AppStats> {
     emit(GetAddToListState());
   }
 
-  void changeIndex(index,text) {
+  void changeIndex(index, text) {
     currentIndex = index;
-    labelAppBar=text;
+    labelAppBar = text;
     emit(ChangeIndexState());
   }
 
@@ -2016,7 +2131,8 @@ class AppCubit extends Cubit<AppStats> {
           addStore: addStore,
           editStore: editStore,
           changeStatus: changeStatus,
-          addComment: addComment, phone: phone);
+          addComment: addComment,
+          phone: phone);
     }).catchError((e) {
       print(e.toString());
       emit(SocialRegisterErrorState(e.toString()));
@@ -2049,10 +2165,7 @@ class AppCubit extends Cubit<AppStats> {
     required bool addComment,
   }) {
     emit(SocialOnLoadingUpdateUserState());
-    FirebaseFirestore.instance
-        .collection("users")
-        .doc(id)
-        .update({
+    FirebaseFirestore.instance.collection("users").doc(id).update({
       "uId": id,
       "email": email,
       "password": password,
@@ -2076,7 +2189,7 @@ class AppCubit extends Cubit<AppStats> {
       "editStore": editStore,
       "changeStatus": changeStatus,
       "addComment": addComment,
-        });
+    });
     emit(SocialUpdateUserSuccessState());
   }
 
@@ -2140,7 +2253,7 @@ class AppCubit extends Cubit<AppStats> {
     emit(OnLoadingCreateUserState());
     UserModel model = UserModel(
         uId: uId,
-        notes:notes,
+        notes: notes,
         password: password,
         phone: phone,
         name: name,
@@ -2161,7 +2274,9 @@ class AppCubit extends Cubit<AppStats> {
         addStore: addStore,
         editStore: editStore,
         changeStatus: changeStatus,
-        addComment: addComment);
+        addComment: addComment,
+      totalBalance: 0
+    );
     FirebaseFirestore.instance
         .collection("users")
         .doc(uId)
@@ -2186,9 +2301,27 @@ class AppCubit extends Cubit<AppStats> {
         mandobe = users
             .where((element) => element.type!.contains("شركة شحن"))
             .toList();
+        merchants = users
+            .where((element) => element.type!.contains("تاجر"))
+            .toList();
         code = users
             .where((element) => element.type!.contains("مسوق الكتروني"))
             .toList();
+        emit(GetAllUsersSuccessState());
+      }).onError((error) {
+        emit(GetAllUsersErrorState());
+      });
+  }
+
+  List<UserModel> usersAdmin = [];
+  void getUsersAdmin() {
+    emit(OnLoadingGetAllUsersState());
+    FirebaseFirestore.instance.collection("userAdmin").snapshots()
+      ..listen((value) {
+        usersAdmin = [];
+        for (var element in value.docs) {
+          usersAdmin.add(UserModel.fromJson(element.data()));
+        }
         emit(GetAllUsersSuccessState());
       }).onError((error) {
         emit(GetAllUsersErrorState());
@@ -2266,7 +2399,7 @@ class AppCubit extends Cubit<AppStats> {
     for (var order in orders) {
       String orderDetails = order.details!
           .map((detail) =>
-      '(اسم المنتج:${detail.name}, الكمية: ${detail.count}, السعر: ${detail.price}, الملاحظة: ${detail.details}, الكود: ${detail.code})')
+              '(اسم المنتج:${detail.name}, الكمية: ${detail.count}, السعر: ${detail.price}, الملاحظة: ${detail.details}, الكود: ${detail.code})')
           .join('\n');
       sheet.appendRow([
         TextCellValue(order.orderCode!),
@@ -2288,8 +2421,10 @@ class AppCubit extends Cubit<AppStats> {
 
     Uint8List uint8List = Uint8List.fromList(excelBytes);
 
-    downloadExcel(uint8List,"اوردرات ${DateTime.now().toString().split(" ")[0]}.xlsx");
+    downloadExcel(
+        uint8List, "اوردرات ${DateTime.now().toString().split(" ")[0]}.xlsx");
   }
+
   Future<void> downloadSheet() async {
     var excel = Excel.createExcel();
     var sheet = excel['Orders'];
@@ -2315,12 +2450,12 @@ class AppCubit extends Cubit<AppStats> {
 
     Uint8List uint8List = Uint8List.fromList(excelBytes);
 
-    downloadExcel(uint8List,"نموذج_اوردرات.xlsx");
+    downloadExcel(uint8List, "نموذج_اوردرات.xlsx");
   }
 
   Future<List<OrderModel>> importOrdersFromExcel() async {
-    consoleLogs=[];
-    try{
+    consoleLogs = [];
+    try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['xlsx'],
@@ -2353,41 +2488,56 @@ class AppCubit extends Cubit<AppStats> {
               row[8] == null ||
               row[9] == null ||
               row[10] == null ||
-              row[11] == null
-          ) {
-            addConsoleLog("⚠️ الصف رقم $i يحتوي على بيانات ناقصة (باستثناء رقم الهاتف الثاني)، سيتم تخطيه.");
+              row[11] == null) {
+            addConsoleLog(
+                "⚠️ الصف رقم $i يحتوي على بيانات ناقصة (باستثناء رقم الهاتف الثاني)، سيتم تخطيه.");
             continue;
           }
 
-          int? code = int.tryParse(row[9]?.value.toString() ?? '');
+          int? sell = int.tryParse(row[9]?.value.toString() ?? '');
           int? count = int.tryParse(row[10]?.value.toString() ?? '');
           int? price = int.tryParse(row[11]?.value.toString() ?? '');
 
-          if (code == null || count == null || price == null) {
-            addConsoleLog("⚠️ الصف رقم $i يحتوي على قيم غير صالحة، سيتم تخطيه.");
+          if (sell == null || count == null || price == null) {
+            addConsoleLog(
+                "⚠️ الصف رقم $i يحتوي على قيم غير صالحة، سيتم تخطيه.");
             continue;
           }
 
           GiftModel? orderDetails = gift!.firstWhere(
-                (element) => element.code == code,
+            (element) => element.code == sell,
             orElse: () => GiftModel(name: "", count: 0, id: '', code: 0),
           );
           ShippingPrice? selectedCity = shippingPrice!.firstWhere(
-                (element) => element.governorate == row[2]!.value.toString(),
-            orElse: () => ShippingPrice(governorate: "", price: 0, id: ''), // قيمة افتراضية
+            (element) => element.governorate == row[2]!.value.toString(),
+            orElse: () => ShippingPrice(
+                governorate: "", price: 0, id: ''), // قيمة افتراضية
+          );
+          UserModel? mandobeen = mandobe!.firstWhere(
+                (element) => element.name == row[5]!.value.toString(),
+            orElse: () => UserModel(
+                name: "", uId: "", type: ''), // قيمة افتراضية
+          );
+          UserModel? sells = code!.firstWhere(
+                (element) => element.name == row[4]!.value.toString(),
+            orElse: () => UserModel(
+                name: "", uId: "", type: ''), // قيمة افتراضية
           );
           orders.add(OrderModel(
             orderCode: row[0]?.value.toString() ?? '',
             name: row[1]?.value.toString() ?? '',
             city: row[2]?.value.toString() ?? '',
             address: row[3]?.value.toString() ?? '',
-            code: row[4]?.value.toString() ?? '',
-            mandobeName: row[5]?.value.toString() ?? '',
+            code: sells.name,
+            mandobeName: mandobeen.name,
             phone: row[6]?.value.toString() ?? '',
             phoneTow: row[7]?.value.toString() ?? '',
             status: row[8]?.value.toString() ?? '',
             dateTime: DateTime.now().toString(),
-            total: "${(count * price)+selectedCity.price!}",
+            total: "${(count * price) + selectedCity.price!}",
+            priceCity: selectedCity.price,
+            uIdMandobeName: mandobeen.uId,
+            uIdCode: sells.uId,
             details: [
               OrderDetailsModel(
                 id: orderDetails.id,
@@ -2396,13 +2546,13 @@ class AppCubit extends Cubit<AppStats> {
                 details: "",
                 price: price,
                 total: count * price,
-                code: code,
+                code: sell,
               )
             ],
           ));
         }
         addConsoleLog("✅ تم استيراد ${orders.length} طلب بنجاح.");
-        for(var i = 0; i < orders.length; i++){
+        for (var i = 0; i < orders.length; i++) {
           // ShippingPrice? selectedCity = shippingPrice!.firstWhere(
           //       (element) => element.governorate == orders[0].city!,
           //   orElse: () => ShippingPrice(governorate: "", price: 0, id: ''), // قيمة افتراضية
@@ -2417,8 +2567,7 @@ class AppCubit extends Cubit<AppStats> {
               code: orders[i].code!,
               total: orders[i].total!,
               dateTime: orders[i].dateTime!,
-              orderDetails:orders[i].details!
-          );
+              orderDetails: orders[i].details!, priceCity: orders[i].priceCity!, uIdMandobeName: orders[i].uIdMandobeName!, uIdCode: orders[i].uIdCode!);
           addConsoleLog("✅ تم اضافة اوردر ${orders[i].name} طلب بنجاح.");
         }
 
@@ -2426,25 +2575,40 @@ class AppCubit extends Cubit<AppStats> {
       }
       addConsoleLog("⚠️ لم يتم اختيار أي ملف.");
       return [];
-    }catch (e){
+    } catch (e) {
       addConsoleLog("⚠️ هذا الملف به مشكلة.");
       return [];
     }
   }
-  void addConsoleLog(String message) {
-      consoleLogs.add(message);
-      emit(AddConsoleState());
-  }
 
+  void addConsoleLog(String message) {
+    consoleLogs.add(message);
+    emit(AddConsoleState());
+  }
 
   Uint8List? webImage;
   String? fileName;
   Future picProductImageFromGallery() async {
     final pickedImage =
-    await ImagePicker().pickImage(source: ImageSource.gallery);
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedImage != null) {
       webImage = await pickedImage.readAsBytes();
       fileName = pickedImage.name;
+      emit(ImagePickedSuccessState());
+    } else {
+      print("no Image Selected");
+      emit(ImagePickedErrorState());
+    }
+  }
+
+  Uint8List? webRequestImage;
+  String? fileRequestName;
+  Future picRequestImageFromGallery() async {
+    final pickedImage =
+    await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      webRequestImage = await pickedImage.readAsBytes();
+      fileRequestName = pickedImage.name;
       emit(ImagePickedSuccessState());
     } else {
       print("no Image Selected");
@@ -2458,12 +2622,16 @@ class AppCubit extends Cubit<AppStats> {
     required String notes,
     required String link,
     required String price,
+    required String price2,
     required int count,
-}) async {
+    required String uid,
+    required String nameAdd,
+    required String type,
+  }) async {
     emit(OnLoadingCheckOut());
     try {
-      http.MultipartRequest request = http.MultipartRequest("POST",
-          Uri.parse("https://admin.the-future-market.xyz/api/upload"));
+      http.MultipartRequest request = http.MultipartRequest(
+          "POST", Uri.parse("https://admin.the-future-market.xyz/api/upload"));
       print("done1");
       if (file != null) {
         var multipartFile = http.MultipartFile.fromBytes(
@@ -2486,15 +2654,17 @@ class AppCubit extends Cubit<AppStats> {
         var jsonData = jsonDecode(responseData);
         emit(CheckOutSuccessful());
         addGift(
-          price: price,
-          name: name,
-          count: count,
-          notes: notes,
-          link: link,
-          image: jsonData['paths'][0]
-        );
+            price: price,
+            price2: price2,
+            nameAdd: nameAdd,
+            name: name,
+            count: count,
+            notes: notes,
+            link: link,
+            image: jsonData['paths'][0],
+            uid: uid,
+            type: type);
         return jsonData['paths'];
-
       } else {
         emit(CheckOutSError());
         print("Error ${myrequest.statusCode}");
@@ -2506,4 +2676,200 @@ class AppCubit extends Cubit<AppStats> {
       return {'error': 'Error uploading image'};
     }
   }
+
+  Future<void> createTransferRequest({
+   required int amount,
+    required String notes,
+    required String phone,
+    required String type
+}) async {
+    emit(OnLoadingAddRequest());
+    CollectionReference collectionRef =
+    FirebaseFirestore.instance.collection("requestsBalance");
+    String newId = collectionRef.doc().id;
+    await collectionRef.doc(newId).set({
+      'id': newId,
+      'name': usermodel!.name,
+      'uId':usermodel!.type=="ادمن"?usersAdmin[0].uId :usermodel!.uId,
+      'type': type,
+      'role': usermodel!.type,
+      'phone': phone,
+      'amount': amount,
+      'status': 'قيد المراجعه',
+      'notes': notes,
+      'image': "",
+      'dateTime': DateTime.now().toString(),
+      'createdAt': FieldValue.serverTimestamp(),
+    }).then((value){
+      emit(AddRequestSuccessful());
+    }).catchError((e){
+      emit(AddRequestSError());
+    });
+  }
+ List<RequestModel>? requests;
+ void getTransferRequest() async {
+    emit(OnLoadingGetRequest());
+    FirebaseFirestore.instance.collection("requestsBalance").where("uId" ,isEqualTo:usermodel!.type=="ادمن"?usersAdmin[0].uId : usermodel!.uId).orderBy("createdAt",descending: true).snapshots()
+      .listen((value) {
+      requests = [];
+      for (var element in value.docs) {
+        requests!.add(RequestModel.fromJson(element.data()));
+      }
+      emit(GetRequestSuccessful());
+    });
+  }
+  List<RequestModel>? requestsDelay;
+  void getTransferRequestDelay() async {
+    emit(OnLoadingGetRequestDelay());
+    FirebaseFirestore.instance.collection("requestsBalance").where("status" ,isEqualTo: 'قيد المراجعه').orderBy("createdAt",descending: true).snapshots()
+        .listen((value) {
+      requestsDelay = [];
+      for (var element in value.docs) {
+        requestsDelay!.add(RequestModel.fromJson(element.data()));
+      }
+      emit(GetRequestDelaySuccessful());
+    });
+  }
+
+  List<RequestModel>? allRequests;
+  void getAllRequest() async {
+    emit(OnLoadingGetRequestDelay());
+    FirebaseFirestore.instance.collection("requestsBalance").orderBy("createdAt",descending: true).snapshots()
+        .listen((value) {
+      allRequests = [];
+      for (var element in value.docs) {
+        allRequests!.add(RequestModel.fromJson(element.data()));
+      }
+      emit(GetRequestDelaySuccessful());
+    });
+  }
+
+  void whistlingAdmin()async {
+    emit(OnLoadingWhistlingAdmin());
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final batch = firestore.batch();
+    CollectionReference collectionRef =
+    FirebaseFirestore.instance.collection("requestsBalance");
+    String newId = collectionRef.doc().id;
+    batch.update(firestore.collection("userAdmin").doc(usersAdmin[0].uId),{"total_balance":0});
+    batch.set(firestore.collection("requestsBalance").doc(newId), {
+      'id': newId,
+      'name': usermodel!.name,
+      'uId':usermodel!.type=="ادمن"?usersAdmin[0].uId :usermodel!.uId,
+      'type': "",
+      'role': usermodel!.type,
+      'phone': "",
+      'amount': usersAdmin[0].totalBalance,
+      'status': 'تم الموافقة',
+      'notes':  "تم تصفير الحساب من ${usersAdmin[0].totalBalance} الي صفر",
+      'image': "",
+      'dateTime': DateTime.now().toString(),
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+    try {
+      await batch.commit();
+      emit(WhistlingAdminSuccessful());
+    } catch (error) {
+      emit(WhistlingAdminError());
+    }
+  }
+
+  void requestConfirm({
+   required RequestModel model,
+   required String notes,
+  })async {
+    emit(OnLoadingRequestConfirm());
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final batch = firestore.batch();
+    if(webRequestImage!=null){
+      try {
+
+        http.MultipartRequest request = http.MultipartRequest(
+            "POST", Uri.parse("https://admin.the-future-market.xyz/api/upload"));
+        if (webRequestImage != null) {
+          var multipartFile = http.MultipartFile.fromBytes(
+            "images",
+            webRequestImage!,
+            filename: fileRequestName,
+          );
+
+          request.files.add(multipartFile);
+        }
+        request.headers.addAll({
+          "Accept": "application/json",
+        });
+        var myrequest = await request.send();
+        if (myrequest.statusCode == 200 || myrequest.statusCode == 201) {
+          var responseData = await myrequest.stream.bytesToString();
+          var jsonData = jsonDecode(responseData);
+
+          batch.update(firestore.collection("requestsBalance").doc(model.id), {
+            "status": "تم الموافقة",
+            "notes":notes,
+            "image":jsonData['paths'][0]
+          });
+          if(model.role=="ادمن"){
+            batch.update(firestore.collection("userAdmin").doc(model.uId), {
+              'total_balance': FieldValue.increment(-model.amount!)
+            });
+          }else{
+            batch.update(firestore.collection("users").doc(model.uId), {
+              'total_balance': FieldValue.increment(-model.amount!)
+            });
+          }
+          try {
+            await batch.commit();
+            emit(RequestConfirmSuccessful());
+          } catch (error) {
+            emit(RequestConfirmError());
+          }
+        } else {
+          emit(RequestConfirmError());
+          print("Error ${myrequest.statusCode}");
+        }
+      } catch (error) {
+        emit(RequestConfirmSuccessful());
+        print('Error uploading image: $error');
+      }
+    }else{
+      batch.update(firestore.collection("requestsBalance").doc(model.id), {
+        "status": "تم الموافقة",
+        "notes":notes,
+      });
+      if(model.role=="ادمن"){
+        batch.update(firestore.collection("userAdmin").doc(model.uId), {
+          'total_balance': FieldValue.increment(-model.amount!)
+        });
+      }else{
+        batch.update(firestore.collection("users").doc(model.uId), {
+          'total_balance': FieldValue.increment(-model.amount!)
+        });
+      }
+      try {
+        await batch.commit();
+        emit(RequestConfirmSuccessful());
+      } catch (error) {
+        emit(RequestConfirmError());
+      }
+    }
+
+
+  }
+
+  void requestRefused(RequestModel model,String notes)async {
+    emit(OnLoadingRequestRefuse());
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final batch = firestore.batch();
+    batch.update(firestore.collection("requestsBalance").doc(model.id), {
+      "status": "تم الرفض",
+      "notes":notes
+    });
+    try {
+      await batch.commit();
+      emit(RequestRefuseSuccessful());
+    } catch (error) {
+      emit(RequestRefuseError());
+    }
+  }
+
 }

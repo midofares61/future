@@ -40,7 +40,7 @@ class Printer extends StatelessWidget {
     pdf.addPage(
       pw.Page(
         margin:const pw.EdgeInsets.all(15),
-        pageFormat: PdfPageFormat.a5,
+        pageFormat: PdfPageFormat.a4,
         build: (context) {
           return buildPrintDoc(order, font);
         },

@@ -4,8 +4,14 @@ class OrderDetailsModel {
   String? details;
   int? count;
   int? price;
+  int? oldPrice;
+  int? tagerPrice;
   int? total;
   int? code;
+  String? uid;
+  String? edit;
+  String? nameAdd;
+  String? link;
 
 
   OrderDetailsModel({
@@ -16,6 +22,12 @@ class OrderDetailsModel {
     this.price,
     this.total,
     this.code,
+    this.link,
+    this.uid,
+    this.edit,
+    this.nameAdd,
+    this.oldPrice,
+    this.tagerPrice,
   });
 
   OrderDetailsModel.fromJson(Map<String, dynamic>?json){
@@ -26,6 +38,12 @@ class OrderDetailsModel {
     details = json?["details"];
     total = json?["total"];
     price = json?["price"];
+    link = json?["link"];
+    uid = json?["uid"];
+    edit = json?["edit"];
+    nameAdd = json?["nameAdd"];
+    oldPrice = json?["oldPrice"];
+    tagerPrice = json?["tagerPrice"];
   }
 
   Map<String, dynamic> toMap() {
@@ -37,6 +55,12 @@ class OrderDetailsModel {
       "price": price,
       "total": total,
       "details": details,
+      "link": link,
+      "uid": uid,
+      "edit": edit,
+      "nameAdd": nameAdd,
+      "oldPrice": oldPrice,
+      "tagerPrice": tagerPrice,
     };
   }
 

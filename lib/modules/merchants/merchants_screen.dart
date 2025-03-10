@@ -4,26 +4,24 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:future/model/user_model.dart';
 import '../../cubit/cubit.dart';
 import '../../cubit/stats.dart';
-import '../../model/mandobe_model.dart';
-import '../../shared/componnents/componnents.dart';
 import '../../shared/constant/constant.dart';
 import '../../shared/widgets/search_widget.dart';
 
-class CodeScreen extends StatefulWidget {
-   const CodeScreen({super.key});
+class MerchantsScreen extends StatefulWidget {
+  const MerchantsScreen({super.key});
 
   @override
-  State<CodeScreen> createState() => _CodeScreenState();
+  State<MerchantsScreen> createState() => _MerchantsScreenState();
 }
 
-class _CodeScreenState extends State<CodeScreen> {
+class _MerchantsScreenState extends State<MerchantsScreen> {
   var searchController = TextEditingController();
 
-   var nameController = TextEditingController();
+  var nameController = TextEditingController();
 
-   var phoneController = TextEditingController();
+  var phoneController = TextEditingController();
   List<UserModel> searchOrder=[];
-   var formKey=GlobalKey<FormState>();
+  var formKey=GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +59,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                         color: Color.fromRGBO(155, 145, 255, 1),
                                         width: 2))),
                             child:const Text(
-                              "المسوقين",
+                              "التجار",
                               style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -80,24 +78,24 @@ class _CodeScreenState extends State<CodeScreen> {
                         children: [
                           Expanded(
                               child: search(
-                      searchController: searchController,
-                          onChange: (search) {
-                            setState(() {
-                              searchOrder = [];
-                              searchOrder = cubit.code!
-                                  .where((element) =>
-                              element.name!
-                                  .contains(
-                                  searchController
-                                      .text) ||
-                                  element.phone!
-                                      .contains(
-                                      searchController
-                                          .text) )
-                                  .toList();
-                            });
-                          },
-                          hint: "ابحث بالاسم..."))
+                                  searchController: searchController,
+                                  onChange: (search) {
+                                    setState(() {
+                                      searchOrder = [];
+                                      searchOrder = cubit.merchants!
+                                          .where((element) =>
+                                      element.name!
+                                          .contains(
+                                          searchController
+                                              .text) ||
+                                          element.phone!
+                                              .contains(
+                                              searchController
+                                                  .text) )
+                                          .toList();
+                                    });
+                                  },
+                                  hint: "ابحث بالاسم..."))
                           // const SizedBox(
                           //   width: 20,
                           // ),
@@ -234,9 +232,9 @@ class _CodeScreenState extends State<CodeScreen> {
                     ),
                     const SizedBox(height: 15,),
                     ConditionalBuilder(
-                        condition: cubit.code!=null,
+                        condition: cubit.merchants!=null,
                         builder: (context) => ConditionalBuilder(
-                            condition: cubit.code!.isNotEmpty,
+                            condition: cubit.merchants!.isNotEmpty,
                             builder: (context)=>Expanded(
                               child: ListView.separated(
                                   itemBuilder: (context, index) => Container(
@@ -247,7 +245,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                     ),
                                     child: InkWell(
                                       onTap: (){
-                                        // navigateTo(context: context, widget: CodeDetailsScreen(code: '${cubit.code![index].name}', orders: cubit.orders,));
+                                        // navigateTo(context: context, widget: CodeDetailsScreen(merchants: '${cubit.merchants![index].name}', orders: cubit.orders,));
                                       },
                                       child: Row(
                                         children: [
@@ -255,7 +253,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                               flex:4,
                                               child: Text(
                                                 searchController
-                                                    .text.isNotEmpty? searchOrder[index].name!:  cubit.code![index].name!,
+                                                    .text.isNotEmpty? searchOrder[index].name!:  cubit.merchants![index].name!,
                                                 style:const TextStyle(
                                                     color: Colors.grey,
                                                     fontSize: 16,
@@ -264,7 +262,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                               flex:4,
                                               child: Text(
                                                 searchController
-                                                    .text.isNotEmpty? searchOrder[index].email!:  cubit.code![index].email!,
+                                                    .text.isNotEmpty? searchOrder[index].email!:  cubit.merchants![index].email!,
                                                 style:const TextStyle(
                                                     color: Colors.grey,
                                                     fontSize: 16,
@@ -274,7 +272,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                               flex:4,
                                               child: Text(
                                                 searchController
-                                                    .text.isNotEmpty? searchOrder[index].phone??"":  cubit.code![index].phone??"",
+                                                    .text.isNotEmpty? searchOrder[index].phone??"":  cubit.merchants![index].phone??"",
                                                 style:const TextStyle(
                                                     color: Colors.grey,
                                                     fontSize: 16,
@@ -285,7 +283,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                               flex:4,
                                               child: Text(
                                                 searchController
-                                                    .text.isNotEmpty? searchOrder[index].totalBalance.toString()??"":  cubit.code![index].totalBalance.toString()??"",
+                                                    .text.isNotEmpty? searchOrder[index].totalBalance.toString()??"":  cubit.merchants![index].totalBalance.toString()??"",
                                                 style:const TextStyle(
                                                     color: Colors.grey,
                                                     fontSize: 16,
@@ -300,7 +298,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                           //       if(screenWidth>600)
                                           //         InkWell(
                                           //           onTap: (){
-                                          //             // navigateTo(context: context, widget: CodeDetailsScreen(code: '${cubit.code![index].name}', orders: cubit.orders,));
+                                          //             // navigateTo(context: context, widget: CodeDetailsScreen(merchants: '${cubit.merchants![index].name}', orders: cubit.orders,));
                                           //           },
                                           //           child: Container(
                                           //             padding:const EdgeInsets.symmetric(
@@ -323,8 +321,8 @@ class _CodeScreenState extends State<CodeScreen> {
                                           //         InkWell(
                                           //           onTap: (){
                                           //             setState(() {
-                                          //               nameController.text=searchController.text.isEmpty? cubit.code![index].name!:searchOrder[index].name!;
-                                          //               phoneController.text=searchController.text.isEmpty? cubit.code![index].phone!:searchOrder[index].phone!;
+                                          //               nameController.text=searchController.text.isEmpty? cubit.merchants![index].name!:searchOrder[index].name!;
+                                          //               phoneController.text=searchController.text.isEmpty? cubit.merchants![index].phone!:searchOrder[index].phone!;
                                           //             });
                                           //             showDialog(context: context, builder: (context)=>AlertDialog(
                                           //               title:const Text("تعديل مسوق",textAlign: TextAlign.center,),
@@ -369,7 +367,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                           //               actions: [
                                           //                 TextButton(onPressed: (){
                                           //                   if(formKey.currentState!.validate()){
-                                          //                     cubit.updateMandobe(name: nameController.text, phone: phoneController.text,id: searchController.text.isEmpty? cubit.code![index].uId!:searchOrder[index].uId!, collection: 'code');
+                                          //                     cubit.updateMandobe(name: nameController.text, phone: phoneController.text,id: searchController.text.isEmpty? cubit.merchants![index].uId!:searchOrder[index].uId!, collection: 'merchants');
                                           //                     nameController.text="";
                                           //                     phoneController.text="";
                                           //                     Navigator.pop(context);
@@ -400,7 +398,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                           //         InkWell(
                                           //           onTap: (){
                                           //             dialog(context, onTap: () {
-                                          //               cubit.deleteMandobe(id: searchController.text.isEmpty? cubit.code![index].uId!:searchOrder[index].uId!, collection: 'code');
+                                          //               cubit.deleteMandobe(id: searchController.text.isEmpty? cubit.merchants![index].uId!:searchOrder[index].uId!, collection: 'merchants');
                                           //               Navigator.pop(context);
                                           //             },
                                           //                 onCancelTap: () {
@@ -424,7 +422,7 @@ class _CodeScreenState extends State<CodeScreen> {
                                     height: 0,
                                   ),
                                   itemCount: searchController
-                                      .text.isNotEmpty? searchOrder.length:cubit.code!.length),
+                                      .text.isNotEmpty? searchOrder.length:cubit.merchants!.length),
                             ),
                             fallback: (context)=>Expanded(child: Center(child: Text("لم يتم اضافة اي مسوقين",
                               style: TextStyle(

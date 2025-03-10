@@ -6,6 +6,7 @@ class UserModel {
   String? email;
   String? phone;
   String? uId;
+  int? totalBalance;
   bool? addOrder;
   bool? editOrder;
   bool? removeOrder;
@@ -47,6 +48,7 @@ class UserModel {
     this.changeStatus,
     this.addComment,
     this.phone,
+    this.totalBalance,
   });
 
   UserModel.fromJson(Map<String, dynamic>? json) {
@@ -73,6 +75,7 @@ class UserModel {
     changeStatus = json?["changeStatus"];
     addComment = json?["addComment"];
     phone = json?["phone"];
+    totalBalance = json?["total_balance"];
   }
 
   Map<String, dynamic> toMap() {
@@ -100,6 +103,7 @@ class UserModel {
       "changeStatus": changeStatus,
       "addComment": addComment,
       "phone": phone,
+      "total_balance": totalBalance,
     };
   }
 }

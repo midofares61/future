@@ -57,13 +57,15 @@ class _SettingScreenState extends State<SettingScreen> {
     "ادمن",
     "خدمة عملاء",
     "مسوق الكتروني",
-    "شركة شحن"
+    "شركة شحن",
+    "تاجر",
   ];
   List<String> listChooseUserUpdate = [
     "ادمن",
     "خدمة عملاء",
     "مسوق الكتروني",
-    "شركة شحن"
+    "شركة شحن",
+    "تاجر",
   ];
 
   GiftModel? giftvalue;
@@ -413,7 +415,7 @@ class _SettingScreenState extends State<SettingScreen> {
                                                                                                           onTap: () {
                                                                                                             if (formKey.currentState!.validate()) {
                                                                                                               cubit.userUpdate(
-                                                                                                                  name: codeValue!,
+                                                                                                                  name: nameController.text,
                                                                                                                   id: cubit.users[index].uId!,
                                                                                                                   notes: notesController.text,
                                                                                                                   email: emailController.text,

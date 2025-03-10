@@ -22,6 +22,7 @@ class _AddStoreState extends State<AddStore> {
   var notesController = TextEditingController();
   var linkController = TextEditingController();
   var priceController = TextEditingController();
+  var price2Controller = TextEditingController();
 
   var nameGiftController = TextEditingController();
 
@@ -55,7 +56,7 @@ class _AddStoreState extends State<AddStore> {
   Widget build(BuildContext context) {
     return BlocConsumer<AppCubit, AppStats>(
         listener: (context, state) {
-          if (state is SocialUpdateUserSuccessState) {
+          if (state is CreateGiftSuccessState) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(
                 "تم اضافة المنتج بنجاح",
@@ -69,6 +70,8 @@ class _AddStoreState extends State<AddStore> {
               notesController.text = "";
               countController.text = "";
               linkController.text = "";
+              priceController.text="";
+              price2Controller.text="";
             });
             Navigator.pop(context);
 
@@ -83,8 +86,9 @@ class _AddStoreState extends State<AddStore> {
         title: Text("اضافة منتج"),
       ),
       body: ConditionalBuilder(
-          condition: state is! CreateGiftErrorState || state is! OnLoadingAddGiftState,
-          builder: (context)=>Center(
+          condition: state is OnLoadingCheckOut || state is OnLoadingAddGiftState,
+        builder: (context)=>Center(child: CircularProgressIndicator(),),
+        fallback: (context)=>Center(
             child: Container(
               width: 600,
               padding: EdgeInsets.all(15),
@@ -162,6 +166,7 @@ class _AddStoreState extends State<AddStore> {
                     Form(
                       key: formKey,
                       child: Column(
+                        spacing: 20,
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
@@ -210,9 +215,6 @@ class _AddStoreState extends State<AddStore> {
                               ),
                             ),
                           ),
-                          const SizedBox(
-                            height: 20,
-                          ),
                           TextFormField(
                             controller: nameController,
                             validator: (value) {
@@ -226,9 +228,6 @@ class _AddStoreState extends State<AddStore> {
                                 border: OutlineInputBorder(),
                                 hintText: "اسم المنتج"),
                           ),
-                          const SizedBox(
-                            height: 20,
-                          ),
                           TextFormField(
                             controller: countController,
                             validator: (value) {
@@ -240,9 +239,6 @@ class _AddStoreState extends State<AddStore> {
                             decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                                 hintText: "الكميه"),
-                          ),
-                          const SizedBox(
-                            height: 20,
                           ),
                           TextFormField(
                             controller: priceController,
@@ -256,9 +252,20 @@ class _AddStoreState extends State<AddStore> {
                                 border: OutlineInputBorder(),
                                 hintText: "السعر"),
                           ),
-                          const SizedBox(
-                            height: 20,
+                          if(usermodel!.type!="تاجر")
+                          TextFormField(
+                            controller: price2Controller,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "يجب ادخال سعر الادارة لاكمال العمليه";
+                              }
+                              return null;
+                            },
+                            decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                hintText: "سعر الادارة"),
                           ),
+
                           TextFormField(
                             controller: notesController,
                             validator: (value) {
@@ -271,29 +278,23 @@ class _AddStoreState extends State<AddStore> {
                                 border: OutlineInputBorder(),
                                 hintText: "تفاصيل المنتج"),
                           ),
-                          const SizedBox(
-                            height: 20,
-                          ),
                           TextFormField(
                             controller: linkController,
                             decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                                 hintText: "لينك الميديا"),
                           ),
-                          const SizedBox(
-                            height: 20,
-                          ),
                           InkWell(
                             onTap: () {
-                              if (formKey.currentState!.validate()) {
+                              if (formKey.currentState!.validate()){
                                 cubit.postRequestWithFile(
                                     price:priceController.text,
                                   name: nameController.text,
-                                  count: int.parse(
-                                      countController.text),
+                                  count: int.parse(countController.text),
                                   notes: notesController.text,
                                   link: linkController.text,
-                                  file: cubit.webImage!
+                                  file: cubit.webImage!,
+                                  uid: usermodel!.uId!, nameAdd: usermodel!.name!, type: usermodel!.type!, price2: price2Controller.text
                                 );
 
                               }
@@ -422,7 +423,7 @@ class _AddStoreState extends State<AddStore> {
               ),
             ),
           ),
-          fallback: (context)=>Center(child: CircularProgressIndicator(),),
+
       ),
     );});
   }

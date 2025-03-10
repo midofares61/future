@@ -99,9 +99,10 @@ class _EditScreenMobileState extends State<EditScreenMobile> {
     total=int.parse(widget.order.total!);
     cityValue=widget.order.city!;
     codeValue=widget.order.code!;
+    cityPrice=widget.order.priceCity!;
     mandobeValue=widget.order.mandobeName!;
     giftList=widget.order.details!;
-    // sumTotal();
+    sumTotal();
     date=DateTime(int.parse(widget.order.dateTime!.split("-")[0]),int.parse(widget.order.dateTime!.split("-")[1]),int.parse(widget.order.dateTime!.split(" ")[0].split("-")[2]));
     _focusNode.requestFocus();
     super.initState();

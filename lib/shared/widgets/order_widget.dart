@@ -31,7 +31,7 @@ class _OrderWidgetState extends State<OrderWidget> {
   var notesController = TextEditingController();
   List<OrderModel> searchOrder = [];
   List<String> list = ["4", "5"];
-  List<String> listStatus = ["مع شركة الشحن", "تم تسليم العميل", "مرتجع", "في المكتب"];
+  List<String> listStatus = ["مع شركة الشحن", "تم تسليم العميل", "مرتجع", "في المكتب", "مؤجل"];
   var formKey = GlobalKey<FormState>();
   var mandobeFormKey = GlobalKey<FormState>();
   var notesFormKey = GlobalKey<FormState>();
@@ -209,7 +209,7 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                             lastStatus: widget
                                                                 .order.status!,
                                                             list: widget.order
-                                                                .details!);
+                                                                .details!, order: widget.order);
                                                         Navigator.pop(context);
                                                       }
                                                     },
@@ -429,7 +429,8 @@ class _OrderWidgetState extends State<OrderWidget> {
                                                             list: widget
                                                                 .order.details!,
                                                             lastStatus: widget
-                                                                .order.status!);
+                                                                .order.status!, order: widget
+                                                            .order);
                                                         Navigator.pop(context);
                                                       }
                                                     },

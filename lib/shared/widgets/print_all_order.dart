@@ -1,8 +1,14 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter/services.dart' show Uint8List, rootBundle;
 import '../../model/order_model.dart';
+import 'package:future/shared/widgets/sut_pdf.dart'
+if (dart.library.html) 'package:future/shared/widgets/down_pdf_web.dart'
+if (dart.library.io) 'package:future/shared/widgets/non_pdf_export.dart';
+
+String fixYa(String text) {
+  return text.replaceAll('ي', 'ى'); // إضافة "Zero-Width Non-Joiner"
+}
 
 Future<void> printSelectedOrders(List<OrderModel> selectedOrders) async {
   final pdf = pw.Document(version: PdfVersion.pdf_1_4, compress: true);
@@ -13,27 +19,23 @@ Future<void> printSelectedOrders(List<OrderModel> selectedOrders) async {
       pw.Page(
         margin: pw.EdgeInsets.all(15),
         pageFormat: PdfPageFormat.a4,
-        build: (context) => pw.Directionality(
+        build: (context) =>pw.Directionality(
             textDirection: pw.TextDirection.rtl,
             child: pw.Column(children: [
               pw.Expanded(
                   child: pw.Container(
-                    padding: pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                     decoration: pw.BoxDecoration(
-                        border: pw.Border.all(color: PdfColor(0.1, 0.1, 0.1, 1), width: 1),
+                        border: pw.Border.all(
+                            color: const PdfColor(0.1, 0.1, 0.1, 1), width: 1),
                         borderRadius: pw.BorderRadius.circular(5)),
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text(
-                          "شركة المراتب",
+                          "The Future",
                           style: pw.TextStyle(
-                              fontSize: 15, fontWeight: pw.FontWeight.bold, font: font),
-                        ),
-                        pw.Text(
-                          "للمنتجات العصرية",
-                          style: pw.TextStyle(
-                              fontSize: 15, fontWeight: pw.FontWeight.bold, font: font),
+                              fontSize: 25, fontWeight: pw.FontWeight.bold, font: font),
                         ),
                         pw.SizedBox(
                           height: 10,
@@ -41,62 +43,63 @@ Future<void> printSelectedOrders(List<OrderModel> selectedOrders) async {
                         pw.Directionality(
                           textDirection: pw.TextDirection.rtl,
                           child: pw.Table(
-                              border: pw.TableBorder.all(color: PdfColor(0.1, 0.1, 0.1, 1)),
+                              border: pw.TableBorder.all(
+                                  color: const PdfColor(0.1, 0.1, 0.1, 1)),
                               children: [
                                 pw.TableRow(children: [
                                   pw.Expanded(
                                       flex: 4,
                                       child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("${order.name}",
-                                            style: pw.TextStyle(font: font)),
+                                        padding:
+                                        const pw.EdgeInsets.symmetric(horizontal: 10),
+                                        child: pw.Text(fixYa("${order.name}"),
+                                            style: pw.TextStyle(font: font,fontSize: 14)),
                                       )),
                                   pw.Expanded(
                                       child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                        padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                                         child: pw.Text("اسم العميل",
-                                            style: pw.TextStyle(font: font),
+                                            style: pw.TextStyle(font: font,fontSize: 14),
                                             textAlign: pw.TextAlign.center),
                                       )),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("${order.code}",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("كود رقم",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
                                 ]),
+                              ]),
+                        ),
+                        pw.Directionality(
+                          textDirection: pw.TextDirection.rtl,
+                          child: pw.Table(
+                              border: pw.TableBorder.all(
+                                  color: const PdfColor(0.1, 0.1, 0.1, 1)),
+                              children: [
                                 pw.TableRow(children: [
                                   pw.Expanded(
-                                      flex: 4,
+                                      flex: 2,
                                       child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("${order.address}",
-                                            style: pw.TextStyle(font: font)),
+                                        padding:
+                                        const pw.EdgeInsets.symmetric(horizontal: 10),
+                                        child: pw.Text(fixYa("${order.address}"),
+                                            style: pw.TextStyle(font: font,fontSize: 14)),
                                       )),
                                   pw.Expanded(
                                       child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                        padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                                         child: pw.Text("العنوان",
-                                            style: pw.TextStyle(font: font),
+                                            style: pw.TextStyle(font: font,fontSize: 14),
                                             textAlign: pw.TextAlign.center),
                                       )),
                                   pw.Expanded(
                                       child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("${order.dateTime!.split(' ')[0]}",
-                                              style: pw.TextStyle(font: font, fontSize: 11),
+                                          padding:
+                                          const pw.EdgeInsets.symmetric(horizontal: 10),
+                                          child: pw.Text(order.dateTime!.split(' ')[0],
+                                              style: pw.TextStyle(font: font, fontSize: 14),
                                               textAlign: pw.TextAlign.center))),
                                   pw.Expanded(
                                       child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("تاريخ التحرير",
-                                              style: pw.TextStyle(font: font),
+                                          padding:
+                                          const pw.EdgeInsets.symmetric(horizontal: 10),
+                                          child: pw.Text("تاريخ الاوردر",
+                                              style: pw.TextStyle(font: font,fontSize: 14),
                                               textAlign: pw.TextAlign.center))),
                                 ]),
                               ]),
@@ -104,36 +107,40 @@ Future<void> printSelectedOrders(List<OrderModel> selectedOrders) async {
                         pw.Directionality(
                           textDirection: pw.TextDirection.rtl,
                           child: pw.Table(
-                              border: pw.TableBorder.all(color: PdfColor(0.1, 0.1, 0.1, 1)),
+                              border: pw.TableBorder.all(
+                                  color: const PdfColor(0.1, 0.1, 0.1, 1)),
                               children: [
                                 pw.TableRow(children: [
                                   pw.Expanded(
-                                      flex: 3,
+                                      flex: 2,
                                       child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                        padding:
+                                        const pw.EdgeInsets.symmetric(horizontal: 10),
                                         child: pw.Text("${order.phoneTow}",
-                                            style: pw.TextStyle(font: font),
+                                            style: pw.TextStyle(font: font, fontSize: 14),
                                             textAlign: pw.TextAlign.center),
                                       )),
                                   pw.Expanded(
                                       child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                        padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                                         child: pw.Text("رقم اخر",
-                                            style: pw.TextStyle(font: font),
+                                            style: pw.TextStyle(font: font, fontSize: 14),
                                             textAlign: pw.TextAlign.center),
                                       )),
                                   pw.Expanded(
                                       flex: 2,
                                       child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                          padding:
+                                          const pw.EdgeInsets.symmetric(horizontal: 10),
                                           child: pw.Text("${order.phone}",
-                                              style: pw.TextStyle(font: font),
+                                              style: pw.TextStyle(font: font, fontSize: 14),
                                               textAlign: pw.TextAlign.center))),
                                   pw.Expanded(
                                       child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                          padding:
+                                          const pw.EdgeInsets.symmetric(horizontal: 10),
                                           child: pw.Text("رقم الهاتف",
-                                              style: pw.TextStyle(font: font),
+                                              style: pw.TextStyle(font: font, fontSize: 14),
                                               textAlign: pw.TextAlign.center))),
                                 ]),
                               ]),
@@ -141,36 +148,40 @@ Future<void> printSelectedOrders(List<OrderModel> selectedOrders) async {
                         pw.Directionality(
                           textDirection: pw.TextDirection.rtl,
                           child: pw.Table(
-                              border: pw.TableBorder.all(color: PdfColor(0.1, 0.1, 0.1, 1)),
+                              border: pw.TableBorder.all(
+                                  color: const PdfColor(0.1, 0.1, 0.1, 1)),
                               children: [
                                 pw.TableRow(children: [
                                   pw.Expanded(
                                       flex: 2,
                                       child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                        padding:
+                                        const pw.EdgeInsets.symmetric(horizontal: 10),
                                         child: pw.Text("ملاحظات",
-                                            style: pw.TextStyle(font: font),
+                                            style: pw.TextStyle(font: font, fontSize: 14),
                                             textAlign: pw.TextAlign.center),
                                       )),
                                   pw.Expanded(
                                       child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                        padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                                         child: pw.Text("السعر",
-                                            style: pw.TextStyle(font: font),
+                                            style: pw.TextStyle(font: font, fontSize: 14),
                                             textAlign: pw.TextAlign.center),
                                       )),
                                   pw.Expanded(
                                       flex: 3,
                                       child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                          padding:
+                                          const pw.EdgeInsets.symmetric(horizontal: 10),
                                           child: pw.Text("اسم المنتج",
-                                              style: pw.TextStyle(font: font),
+                                              style: pw.TextStyle(font: font, fontSize: 14),
                                               textAlign: pw.TextAlign.center))),
                                   pw.Expanded(
                                       child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                          padding:
+                                          const pw.EdgeInsets.symmetric(horizontal: 10),
                                           child: pw.Text("الكميه",
-                                              style: pw.TextStyle(font: font),
+                                              style: pw.TextStyle(font: font, fontSize: 14),
                                               textAlign: pw.TextAlign.center))),
                                 ]),
                                 ...List.generate(
@@ -179,37 +190,37 @@ Future<void> printSelectedOrders(List<OrderModel> selectedOrders) async {
                                       pw.Expanded(
                                           flex: 2,
                                           child: pw.Padding(
-                                            padding:
-                                            pw.EdgeInsets.symmetric(horizontal: 10),
-                                            child: pw.Text(
-                                                "${order.details![index].details}",
-                                                style: pw.TextStyle(font: font),
+                                            padding: const pw.EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: pw.Text(fixYa(
+                                                "${order.details![index].details}"),
+                                                style: pw.TextStyle(font: font, fontSize: 14),
                                                 textAlign: pw.TextAlign.center),
                                           )),
                                       pw.Expanded(
                                           child: pw.Padding(
-                                            padding:
-                                            pw.EdgeInsets.symmetric(horizontal: 10),
-                                            child: pw.Text("0",
-                                                style: pw.TextStyle(font: font),
+                                            padding: const pw.EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: pw.Text("${order.details![index].price}",
+                                                style: pw.TextStyle(font: font, fontSize: 14),
                                                 textAlign: pw.TextAlign.center),
                                           )),
                                       pw.Expanded(
                                           flex: 3,
                                           child: pw.Padding(
-                                              padding: pw.EdgeInsets.symmetric(
+                                              padding: const pw.EdgeInsets.symmetric(
                                                   horizontal: 10),
-                                              child: pw.Text(
-                                                  "${order.details![index].name}",
-                                                  style: pw.TextStyle(font: font),
+                                              child: pw.Text(fixYa(
+                                                  "${order.details![index].name}"),
+                                                  style: pw.TextStyle(font: font, fontSize: 14),
                                                   textAlign: pw.TextAlign.center))),
                                       pw.Expanded(
                                           child: pw.Padding(
-                                              padding: pw.EdgeInsets.symmetric(
+                                              padding: const pw.EdgeInsets.symmetric(
                                                   horizontal: 10),
                                               child: pw.Text(
                                                   "${order.details![index].count}",
-                                                  style: pw.TextStyle(font: font),
+                                                  style: pw.TextStyle(font: font, fontSize: 14),
                                                   textAlign: pw.TextAlign.center))),
                                     ])),
                               ]),
@@ -218,22 +229,23 @@ Future<void> printSelectedOrders(List<OrderModel> selectedOrders) async {
                           textDirection: pw.TextDirection.rtl,
                           child: pw.Table(
                               border: pw.TableBorder.symmetric(
-                                  outside:
-                                  pw.BorderSide(color: PdfColor(0.1, 0.1, 0.1, 1))),
+                                  outside: const pw.BorderSide(
+                                      color: PdfColor(0.1, 0.1, 0.1, 1))),
                               children: [
                                 pw.TableRow(children: [
                                   pw.Padding(
-                                    padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                    padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                                     child: pw.Text("اجمالي الفاتورة   /     ${order.total}",
-                                        style: pw.TextStyle(font: font),
+                                        style: pw.TextStyle(font: font, fontSize: 14),
                                         textAlign: pw.TextAlign.left),
                                   ),
                                   pw.Spacer(),
                                   pw.Padding(
-                                      padding: pw.EdgeInsets.symmetric(horizontal: 10),
+                                      padding:
+                                      const pw.EdgeInsets.symmetric(horizontal: 10),
                                       child: pw.Text(
-                                        "اسم المندوب    /     ${order.mandobeName == null ? "" : order.mandobeName}",
-                                        style: pw.TextStyle(font: font),
+                                        fixYa( "اسم المندوب    /     ${order.mandobeName ?? ""}"),
+                                        style: pw.TextStyle(font: font, fontSize: 14),
                                       )),
                                 ]),
                               ]),
@@ -241,236 +253,11 @@ Future<void> printSelectedOrders(List<OrderModel> selectedOrders) async {
                       ],
                     ),
                   )),
-              pw.SizedBox(height: 40),
-              pw.Expanded(
-                  child: pw.Container(
-                    padding: pw.EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: pw.BoxDecoration(
-                        border: pw.Border.all(color: PdfColor(0.1, 0.1, 0.1, 1), width: 1),
-                        borderRadius: pw.BorderRadius.circular(5)),
-                    child: pw.Column(
-                      crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      children: [
-                        pw.Text(
-                          "شركة المراتب",
-                          style: pw.TextStyle(
-                              fontSize: 15, fontWeight: pw.FontWeight.bold, font: font),
-                        ),
-                        pw.Text(
-                          "للمنتجات العصرية",
-                          style: pw.TextStyle(
-                              fontSize: 15, fontWeight: pw.FontWeight.bold, font: font),
-                        ),
-                        pw.SizedBox(
-                          height: 10,
-                        ),
-                        pw.Directionality(
-                          textDirection: pw.TextDirection.rtl,
-                          child: pw.Table(
-                              border: pw.TableBorder.all(color: PdfColor(0.1, 0.1, 0.1, 1)),
-                              children: [
-                                pw.TableRow(children: [
-                                  pw.Expanded(
-                                      flex: 4,
-                                      child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("${order.name}",
-                                            style: pw.TextStyle(font: font)),
-                                      )),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("اسم العميل",
-                                            style: pw.TextStyle(font: font),
-                                            textAlign: pw.TextAlign.center),
-                                      )),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("${order.code}",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("كود رقم",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
-                                ]),
-                                pw.TableRow(children: [
-                                  pw.Expanded(
-                                      flex: 4,
-                                      child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("${order.address}",
-                                            style: pw.TextStyle(font: font)),
-                                      )),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("العنوان",
-                                            style: pw.TextStyle(font: font),
-                                            textAlign: pw.TextAlign.center),
-                                      )),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("${order.dateTime!.split(' ')[0]}",
-                                              style: pw.TextStyle(font: font, fontSize: 11),
-                                              textAlign: pw.TextAlign.center))),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("تاريخ التحرير",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
-                                ]),
-                              ]),
-                        ),
-                        pw.Directionality(
-                          textDirection: pw.TextDirection.rtl,
-                          child: pw.Table(
-                              border: pw.TableBorder.all(color: PdfColor(0.1, 0.1, 0.1, 1)),
-                              children: [
-                                pw.TableRow(children: [
-                                  pw.Expanded(
-                                      flex: 3,
-                                      child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("${order.phoneTow}",
-                                            style: pw.TextStyle(font: font),
-                                            textAlign: pw.TextAlign.center),
-                                      )),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("رقم اخر",
-                                            style: pw.TextStyle(font: font),
-                                            textAlign: pw.TextAlign.center),
-                                      )),
-                                  pw.Expanded(
-                                      flex: 2,
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("${order.phone}",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("رقم الهاتف",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
-                                ]),
-                              ]),
-                        ),
-                        pw.Directionality(
-                          textDirection: pw.TextDirection.rtl,
-                          child: pw.Table(
-                              border: pw.TableBorder.all(color: PdfColor(0.1, 0.1, 0.1, 1)),
-                              children: [
-                                pw.TableRow(children: [
-                                  pw.Expanded(
-                                      flex: 2,
-                                      child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("ملاحظات",
-                                            style: pw.TextStyle(font: font),
-                                            textAlign: pw.TextAlign.center),
-                                      )),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                        padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                        child: pw.Text("السعر",
-                                            style: pw.TextStyle(font: font),
-                                            textAlign: pw.TextAlign.center),
-                                      )),
-                                  pw.Expanded(
-                                      flex: 3,
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("اسم المنتج",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
-                                  pw.Expanded(
-                                      child: pw.Padding(
-                                          padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                          child: pw.Text("الكميه",
-                                              style: pw.TextStyle(font: font),
-                                              textAlign: pw.TextAlign.center))),
-                                ]),
-                                ...List.generate(
-                                    order.details!.length,
-                                        (index) => pw.TableRow(children: [
-                                      pw.Expanded(
-                                          flex: 2,
-                                          child: pw.Padding(
-                                            padding:
-                                            pw.EdgeInsets.symmetric(horizontal: 10),
-                                            child: pw.Text(
-                                                "${order.details![index].details}",
-                                                style: pw.TextStyle(font: font),
-                                                textAlign: pw.TextAlign.center),
-                                          )),
-                                      pw.Expanded(
-                                          child: pw.Padding(
-                                            padding:
-                                            pw.EdgeInsets.symmetric(horizontal: 10),
-                                            child: pw.Text("0",
-                                                style: pw.TextStyle(font: font),
-                                                textAlign: pw.TextAlign.center),
-                                          )),
-                                      pw.Expanded(
-                                          flex: 3,
-                                          child: pw.Padding(
-                                              padding: pw.EdgeInsets.symmetric(
-                                                  horizontal: 10),
-                                              child: pw.Text(
-                                                  "${order.details![index].name}",
-                                                  style: pw.TextStyle(font: font),
-                                                  textAlign: pw.TextAlign.center))),
-                                      pw.Expanded(
-                                          child: pw.Padding(
-                                              padding: pw.EdgeInsets.symmetric(
-                                                  horizontal: 10),
-                                              child: pw.Text(
-                                                  "${order.details![index].count}",
-                                                  style: pw.TextStyle(font: font),
-                                                  textAlign: pw.TextAlign.center))),
-                                    ])),
-                              ]),
-                        ),
-                        pw.Directionality(
-                          textDirection: pw.TextDirection.rtl,
-                          child: pw.Table(
-                              border: pw.TableBorder.symmetric(
-                                  outside:
-                                  pw.BorderSide(color: PdfColor(0.1, 0.1, 0.1, 1))),
-                              children: [
-                                pw.TableRow(children: [
-                                  pw.Padding(
-                                    padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                    child: pw.Text("اجمالي الفاتورة   /     ${order.total}",
-                                        style: pw.TextStyle(font: font),
-                                        textAlign: pw.TextAlign.left),
-                                  ),
-                                  pw.Spacer(),
-                                  pw.Padding(
-                                      padding: pw.EdgeInsets.symmetric(horizontal: 10),
-                                      child: pw.Text(
-                                        "اسم المندوب    /     ${order.mandobeName == null ? "" : order.mandobeName}",
-                                        style: pw.TextStyle(font: font),
-                                      )),
-                                ]),
-                              ]),
-                        ),
-                      ],
-                    ),
-                  ))
             ])),
       ),
     );
   }
+  Uint8List pdfBytes = await pdf.save();
 
-  await Printing.layoutPdf(onLayout: (PdfPageFormat format) async => pdf.save());
+downloadPdf(pdfBytes, "orders");
 }

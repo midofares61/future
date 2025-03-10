@@ -96,100 +96,6 @@ class _MandobeScreenState extends State<MandobeScreen> {
                                     });
                                   },
                                   hint: "ابحث بالاسم , رقم الهاتف...")),
-                          // const SizedBox(
-                          //   width: 20,
-                          // ),
-                          // if(usermodel!.addMandobe!)
-                          // InkWell(
-                          //   onTap: () {
-                          //     setState(() {
-                          //       nameController.text = "";
-                          //       phoneController.text = "";
-                          //     });
-                          //     showDialog(
-                          //         context: context,
-                          //         builder: (context) => AlertDialog(
-                          //               title: const Text(
-                          //                 "اضافة شركة",
-                          //                 textAlign: TextAlign.center,
-                          //               ),
-                          //               content: Directionality(
-                          //                 textDirection: TextDirection.rtl,
-                          //                 child: Form(
-                          //                   key: formKey,
-                          //                   child: Column(
-                          //                     mainAxisSize: MainAxisSize.min,
-                          //                     children: [
-                          //                       TextFormField(
-                          //                         controller: nameController,
-                          //                         validator: (value) {
-                          //                           if (value!.isEmpty) {
-                          //                             return "يجب ادخال اسم المندوب لاكمال العمليه";
-                          //                           }
-                          //                           return null;
-                          //                         },
-                          //                         decoration:
-                          //                             const InputDecoration(
-                          //                                 border:
-                          //                                     OutlineInputBorder(),
-                          //                                 hintText:
-                          //                                     "اسم الشركة"),
-                          //                       ),
-                          //                       const SizedBox(
-                          //                         height: 20,
-                          //                       ),
-                          //                       TextFormField(
-                          //                         controller: phoneController,
-                          //                         validator: (value) {
-                          //                           if (value!.isEmpty) {
-                          //                             return "يجب ادخال رقم الهاتف لاكمال العمليه";
-                          //                           }
-                          //                           return null;
-                          //                         },
-                          //                         decoration:
-                          //                             const InputDecoration(
-                          //                                 border:
-                          //                                     OutlineInputBorder(),
-                          //                                 hintText:
-                          //                                     "رقم الهاتف"),
-                          //                       )
-                          //                     ],
-                          //                   ),
-                          //                 ),
-                          //               ),
-                          //               actions: [
-                          //                 TextButton(
-                          //                     onPressed: () {
-                          //                       if (formKey.currentState!
-                          //                           .validate()) {
-                          //                         cubit.addMandobe(
-                          //                             name: nameController.text,
-                          //                             phone:
-                          //                                 phoneController.text);
-                          //                         nameController.text = "";
-                          //                         phoneController.text = "";
-                          //                         Navigator.pop(context);
-                          //                       }
-                          //                     },
-                          //                     child: const Text("اضافة"))
-                          //               ],
-                          //             ));
-                          //   },
-                          //   child: Container(
-                          //     padding: const EdgeInsets.symmetric(
-                          //         horizontal: 15, vertical: 10),
-                          //     decoration: BoxDecoration(
-                          //         color: Colors.grey.shade100,
-                          //         borderRadius: BorderRadius.circular(5)),
-                          //     child: Text(
-                          //       "اضافة شركة",
-                          //       style: TextStyle(
-                          //           color: defaultColor,
-                          //           fontSize: screenWidth>600?18:15,
-                          //           fontWeight: FontWeight.w500),
-                          //     ),
-                          //   ),
-                          // ),
                         ],
                       ),
                     ),
@@ -234,6 +140,15 @@ class _MandobeScreenState extends State<MandobeScreen> {
                               flex: 4,
                               child: Text(
                                 "رقم الهاتف",
+                                style: TextStyle(
+                                    color: secondeColor,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600),
+                              )),
+                          Expanded(
+                              flex: 4,
+                              child: Text(
+                                "الرصيد",
                                 style: TextStyle(
                                     color: secondeColor,
                                     fontSize: 16,
@@ -320,6 +235,21 @@ class _MandobeScreenState extends State<MandobeScreen> {
                                                     .phone!
                                                     : searchOrder[index]
                                                     .phone!,
+                                                style: const TextStyle(
+                                                    color: Colors.grey,
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                    FontWeight.w600),
+                                              )),
+                                          Expanded(
+                                              flex: 4,
+                                              child: Text(
+                                                searchController
+                                                    .text.isEmpty
+                                                    ? cubit.mandobe![index]
+                                                    .totalBalance!.toString()
+                                                    : searchOrder[index]
+                                                    .totalBalance!.toString(),
                                                 style: const TextStyle(
                                                     color: Colors.grey,
                                                     fontSize: 16,

@@ -17,7 +17,7 @@ import 'modules/login/login_screen.dart';
 void main()async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: const FirebaseOptions(apiKey: "AIzaSyCn9mZ2WlZvh4FDpxIdjcojMc995dXYsU0", appId: "1:286971011051:web:6dda0ae7fcba54ab2703ae", messagingSenderId: "286971011051", projectId: "future-5bb96"),
+    options: const FirebaseOptions(apiKey: "AIzaSyDHt_3cbmdnwNYgW3nIJO3Ppks4mX-hnDg", appId: "1:990989442570:web:4e23adaa2bdb5e591149f3", messagingSenderId: "990989442570", projectId: "test-ec0a7"),
   );
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
@@ -35,6 +35,7 @@ void main()async {
       type: user["type"],
       name: user["name"],
       email: user["email"],
+      notes: user["notes"],
       addOrder: user["addOrder"],
       editOrder: user["editOrder"],
       removeOrder: user["removeOrder"],
@@ -42,7 +43,7 @@ void main()async {
       addMandobe: user["addMandobe"],
       editMandobe: user["editMandobe"],
       removeMandobe: user["removeMandobe"],
-        showCode: user["showCode"],
+      showCode: user["showCode"],
       addCode: user["addCode"],
       editCode: user["editCode"],
       removeCode: user["removeCode"],
@@ -50,7 +51,8 @@ void main()async {
       addStore: user["addStore"],
       editStore: user["editStore"],
       changeStatus: user["changeStatus"],
-      addComment: user["addComment"]
+      addComment: user["addComment"],
+      totalBalance: user["total_balance"],
     );
   }
   print(user);
@@ -78,9 +80,7 @@ class MyApp extends StatelessWidget {
               return  MaterialApp(
                 debugShowCheckedModeBanner: false,
                 locale: Locale('ar'),
-                supportedLocales: [
-                  Locale('ar'), // العربية
-                ],
+                supportedLocales: [Locale('ar'), Locale('en')],
                 localizationsDelegates: [
                   GlobalMaterialLocalizations.delegate,
                   GlobalWidgetsLocalizations.delegate,

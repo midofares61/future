@@ -14,6 +14,8 @@ class CreateOrderErrorState extends AppStats{}
 
 class DeleteOrderSuccessState extends AppStats{}
 
+class DeleteGiftSuccessState extends AppStats{}
+
 class RemoveParametersSuccessState extends AppStats{}
 
 class OnLoadingGetOrderState extends AppStats{}
@@ -95,6 +97,12 @@ class CreateGiftSuccessState extends AppStats{}
 
 class CreateGiftErrorState extends AppStats{}
 
+class OnLoadingAddGiftPendingState extends AppStats{}
+
+class CreateGiftPendingSuccessState extends AppStats{}
+
+class CreateGiftPendingErrorState extends AppStats{}
+
 class OnLoadingAddShippingPriceState extends AppStats{}
 
 class CreateShippingPriceSuccessState extends AppStats{}
@@ -106,6 +114,12 @@ class OnLoadingGetGiftState extends AppStats{}
 class GetGiftSuccessState extends AppStats{}
 
 class GetGiftErrorState extends AppStats{}
+
+class OnLoadingGetGiftPendingState extends AppStats{}
+
+class GetGiftPendingSuccessState extends AppStats{}
+
+class GetGiftPendingErrorState extends AppStats{}
 
 class OnLoadingGetShippingPriceState extends AppStats{}
 
@@ -177,10 +191,14 @@ class GetRemoveFromListState extends AppStats{}
 
 class UpdateGiftSuccessState extends AppStats{}
 
+class UpdateGiftAddSuccessState extends AppStats{}
+
 class OnLoadingUpdateShippingPriceState extends AppStats{}
 class UpdateShippingPriceSuccessState extends AppStats{}
 
 class UpdateGiftErrorState extends AppStats{}
+
+class UpdateGiftAddErrorState extends AppStats{}
 
 class UpdateMattressSuccessState extends AppStats{}
 
@@ -328,3 +346,39 @@ class OnLoadingCheckOut extends AppStats{}
 class CheckOutSuccessful extends AppStats{}
 
 class CheckOutSError extends AppStats{}
+
+class OnLoadingAddRequest extends AppStats{}
+
+class AddRequestSuccessful extends AppStats{}
+
+class AddRequestSError extends AppStats{}
+
+class OnLoadingGetRequest extends AppStats{}
+
+class GetRequestSuccessful extends AppStats{}
+
+class GetRequestSError extends AppStats{}
+
+class OnLoadingGetRequestDelay extends AppStats{}
+
+class GetRequestDelaySuccessful extends AppStats{}
+
+class GetRequestDelaySError extends AppStats{}
+
+class OnLoadingWhistlingAdmin extends AppStats{}
+
+class WhistlingAdminSuccessful extends AppStats{}
+
+class WhistlingAdminError extends AppStats{}
+
+class OnLoadingRequestConfirm extends AppStats{}
+
+class RequestConfirmSuccessful extends AppStats{}
+
+class RequestConfirmError extends AppStats{}
+
+class OnLoadingRequestRefuse extends AppStats{}
+
+class RequestRefuseSuccessful extends AppStats{}
+
+class RequestRefuseError extends AppStats{}

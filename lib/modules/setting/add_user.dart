@@ -49,7 +49,7 @@ class _AddUserState extends State<AddUser> {
   String? codeValue;
 
 
-  List<String> listChooseUser = ["ادمن", "خدمة عملاء", "مسوق الكتروني","شركة شحن"];
+  List<String> listChooseUser = ["ادمن", "خدمة عملاء", "مسوق الكتروني","شركة شحن", "تاجر",];
   List<String> listChooseUserUpdate = ["ادمن", "خدمة عملاء"];
 
   GiftModel? giftvalue;
@@ -128,7 +128,7 @@ class _AddUserState extends State<AddUser> {
         changeStatus = false;
         addComment = true;
       });
-    }else {
+    }else if(value=="تاجر"){
       setState(() {
         addOrder = false;
         editOrder = false;
@@ -141,12 +141,31 @@ class _AddUserState extends State<AddUser> {
         addCode = false;
         editCode = false;
         removeCode = false;
-        showStore = false;
-        addStore = false;
-        editStore = false;
-        changeStatus = true;
-        addComment = true;
+        showStore = true;
+        addStore = true;
+        editStore = true;
+        changeStatus = false;
+        addComment = false;
       });
+    }else {
+    setState(() {
+    addOrder = false;
+    editOrder = false;
+    removeOrder = false;
+    showMandobe = false;
+    addMandobe = false;
+    editMandobe = false;
+    removeMandobe = false;
+    showCode = false;
+    addCode = false;
+    editCode = false;
+    removeCode = false;
+    showStore = false;
+    addStore = false;
+    editStore = false;
+    changeStatus = true;
+    addComment = true;
+    });
     }
   }
   @override
@@ -176,6 +195,32 @@ class _AddUserState extends State<AddUser> {
             Navigator.pop(context);
 
           }
+          if (state is SocialRegisterErrorState) {
+            if(state.error=="[firebase_auth/email-already-in-use] The email address is already in use by another account."){
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                  "هذا المستخدم موجود من قبل قم بتغيير اسم المستخدم",
+                  style: TextStyle(color: Colors.white),
+                ),
+                backgroundColor: Colors.red,
+                duration: Duration(milliseconds: 1500),
+              ));
+              setState(() {
+                emailController
+                    .text = "";
+              });
+            }else  if(state.error=="[firebase_auth/network-request-failed] A network AuthError (such as timeout, interrupted connection or unreachable host) has occurred."){
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                  "تحقق من الاتصال بالانترنت ثم اعد المحاولة",
+                  style: TextStyle(color: Colors.white),
+                ),
+                backgroundColor: Colors.red,
+                duration: Duration(milliseconds: 1500),
+              ));
+            }
+
+          }
         },
     builder: (context, state) {
     AppCubit cubit = AppCubit.get(context);
@@ -186,8 +231,9 @@ class _AddUserState extends State<AddUser> {
         title: Text("اضافة مستخدم"),
       ),
       body: ConditionalBuilder(
-          condition: state is! SocialRegisterOnLoadingState || state is! OnLoadingCreateUserState,
-          builder: (context)=>Center(
+          condition: state is SocialRegisterOnLoadingState || state is OnLoadingCreateUserState,
+          builder: (context)=>Center(child: CircularProgressIndicator(),),
+          fallback: (context)=>Center(
           child: Container(
           width: 600,
           child:Padding(
@@ -278,14 +324,14 @@ class _AddUserState extends State<AddUser> {
                                   border:
                                   OutlineInputBorder(),
                                   hintText:
-                                  "اسم المستخدم"),
+                                  "الاسم"),
                             ),
                             TextFormField(
                               controller:
                               emailController,
                               validator: (value) {
                                 if (value!.isEmpty) {
-                                  return "يجب ادخال الايميل لاكمال العمليه";
+                                  return "يجب ادخال اسم المستخدم لاكمال العمليه";
                                 }
                                 return null;
                               },
@@ -294,7 +340,7 @@ class _AddUserState extends State<AddUser> {
                                   border:
                                   OutlineInputBorder(),
                                   hintText:
-                                  "الايميل"),
+                                  "اسم المستخدم"),
                             ),
                             TextFormField(
                               controller:
@@ -558,7 +604,7 @@ class _AddUserState extends State<AddUser> {
                                             (value) {
                                           setState(
                                                   () {
-                                                    changeStatus =
+                                                changeStatus =
                                                 value!;
                                               });
                                         }),
@@ -571,7 +617,7 @@ class _AddUserState extends State<AddUser> {
                                             (value) {
                                           setState(
                                                   () {
-                                                    addComment =
+                                                addComment =
                                                 value!;
                                               });
                                         }),
@@ -588,7 +634,7 @@ class _AddUserState extends State<AddUser> {
                                     .currentState!
                                     .validate()) {
                                   cubit.userRegister(
-                                    notes: notesController.text,
+                                      notes: notesController.text,
                                       name:
                                       nameController
                                           .text,
@@ -669,7 +715,6 @@ class _AddUserState extends State<AddUser> {
               ),
             ),
           ))),
-          fallback: (context)=>Center(child: CircularProgressIndicator(),)
       )
       ,
 

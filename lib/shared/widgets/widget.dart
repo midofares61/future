@@ -1,7 +1,9 @@
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import '../../model/order_model.dart';
-
+String fixYa(String text) {
+  return text.replaceAll('ي', 'ى'); // إضافة "Zero-Width Non-Joiner"
+}
 buildPrintDoc(OrderModel order, font) => pw.Directionality(
     textDirection: pw.TextDirection.rtl,
     child: pw.Column(children: [
@@ -18,7 +20,7 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
             pw.Text(
               "The Future",
               style: pw.TextStyle(
-                  fontSize: 15, fontWeight: pw.FontWeight.bold, font: font),
+                  fontSize: 25  , fontWeight: pw.FontWeight.bold, font: font),
             ),
             pw.SizedBox(
               height: 10,
@@ -35,14 +37,14 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                           child: pw.Padding(
                             padding:
                             const pw.EdgeInsets.symmetric(horizontal: 10),
-                            child: pw.Text("${order.name}",
-                                style: pw.TextStyle(font: font,fontSize: 8)),
+                            child: pw.Text(fixYa("${order.name}"),
+                                style: pw.TextStyle(font: font,fontSize: 14)),
                           )),
                       pw.Expanded(
                           child: pw.Padding(
                             padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                             child: pw.Text("اسم العميل",
-                                style: pw.TextStyle(font: font,fontSize: 8),
+                                style: pw.TextStyle(font: font,fontSize: 14),
                                 textAlign: pw.TextAlign.center),
                           )),
                     ]),
@@ -60,14 +62,14 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                           child: pw.Padding(
                             padding:
                                 const pw.EdgeInsets.symmetric(horizontal: 10),
-                            child: pw.Text("${order.address}",
-                                style: pw.TextStyle(font: font,fontSize: 8)),
+                            child: pw.Text(fixYa("${order.address}"),
+                                style: pw.TextStyle(font: font,fontSize: 14)),
                           )),
                       pw.Expanded(
                           child: pw.Padding(
                         padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                         child: pw.Text("العنوان",
-                            style: pw.TextStyle(font: font,fontSize: 8),
+                            style: pw.TextStyle(font: font,fontSize: 14),
                             textAlign: pw.TextAlign.center),
                       )),
                       pw.Expanded(
@@ -75,14 +77,14 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                               padding:
                                   const pw.EdgeInsets.symmetric(horizontal: 10),
                               child: pw.Text(order.dateTime!.split(' ')[0],
-                                  style: pw.TextStyle(font: font, fontSize: 8),
+                                  style: pw.TextStyle(font: font, fontSize: 14),
                                   textAlign: pw.TextAlign.center))),
                       pw.Expanded(
                           child: pw.Padding(
                               padding:
                                   const pw.EdgeInsets.symmetric(horizontal: 10),
                               child: pw.Text("تاريخ الاوردر",
-                                  style: pw.TextStyle(font: font,fontSize: 8),
+                                  style: pw.TextStyle(font: font,fontSize: 14),
                                   textAlign: pw.TextAlign.center))),
                     ]),
                   ]),
@@ -100,14 +102,14 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                             padding:
                                 const pw.EdgeInsets.symmetric(horizontal: 10),
                             child: pw.Text("${order.phoneTow}",
-                                style: pw.TextStyle(font: font, fontSize: 8),
+                                style: pw.TextStyle(font: font, fontSize: 14),
                                 textAlign: pw.TextAlign.center),
                           )),
                       pw.Expanded(
                           child: pw.Padding(
                         padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                         child: pw.Text("رقم اخر",
-                            style: pw.TextStyle(font: font, fontSize: 8),
+                            style: pw.TextStyle(font: font, fontSize: 14),
                             textAlign: pw.TextAlign.center),
                       )),
                       pw.Expanded(
@@ -116,14 +118,14 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                               padding:
                                   const pw.EdgeInsets.symmetric(horizontal: 10),
                               child: pw.Text("${order.phone}",
-                                  style: pw.TextStyle(font: font, fontSize: 8),
+                                  style: pw.TextStyle(font: font, fontSize: 14),
                                   textAlign: pw.TextAlign.center))),
                       pw.Expanded(
                           child: pw.Padding(
                               padding:
                                   const pw.EdgeInsets.symmetric(horizontal: 10),
                               child: pw.Text("رقم الهاتف",
-                                  style: pw.TextStyle(font: font, fontSize: 8),
+                                  style: pw.TextStyle(font: font, fontSize: 14),
                                   textAlign: pw.TextAlign.center))),
                     ]),
                   ]),
@@ -141,14 +143,14 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                             padding:
                                 const pw.EdgeInsets.symmetric(horizontal: 10),
                             child: pw.Text("ملاحظات",
-                                style: pw.TextStyle(font: font, fontSize: 8),
+                                style: pw.TextStyle(font: font, fontSize: 14),
                                 textAlign: pw.TextAlign.center),
                           )),
                       pw.Expanded(
                           child: pw.Padding(
                         padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                         child: pw.Text("السعر",
-                            style: pw.TextStyle(font: font, fontSize: 8),
+                            style: pw.TextStyle(font: font, fontSize: 14),
                             textAlign: pw.TextAlign.center),
                       )),
                       pw.Expanded(
@@ -157,14 +159,14 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                               padding:
                                   const pw.EdgeInsets.symmetric(horizontal: 10),
                               child: pw.Text("اسم المنتج",
-                                  style: pw.TextStyle(font: font, fontSize: 8),
+                                  style: pw.TextStyle(font: font, fontSize: 14),
                                   textAlign: pw.TextAlign.center))),
                       pw.Expanded(
                           child: pw.Padding(
                               padding:
                                   const pw.EdgeInsets.symmetric(horizontal: 10),
                               child: pw.Text("الكميه",
-                                  style: pw.TextStyle(font: font, fontSize: 8),
+                                  style: pw.TextStyle(font: font, fontSize: 14),
                                   textAlign: pw.TextAlign.center))),
                     ]),
                     ...List.generate(
@@ -175,9 +177,9 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                                   child: pw.Padding(
                                     padding: const pw.EdgeInsets.symmetric(
                                         horizontal: 10),
-                                    child: pw.Text(
-                                        "${order.details![index].details}",
-                                        style: pw.TextStyle(font: font, fontSize: 8),
+                                    child: pw.Text(fixYa(
+                                        "${order.details![index].details}"),
+                                        style: pw.TextStyle(font: font, fontSize: 14),
                                         textAlign: pw.TextAlign.center),
                                   )),
                               pw.Expanded(
@@ -185,7 +187,7 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                                 padding: const pw.EdgeInsets.symmetric(
                                     horizontal: 10),
                                 child: pw.Text("${order.details![index].price}",
-                                    style: pw.TextStyle(font: font, fontSize: 8),
+                                    style: pw.TextStyle(font: font, fontSize: 14),
                                     textAlign: pw.TextAlign.center),
                               )),
                               pw.Expanded(
@@ -193,9 +195,9 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                                   child: pw.Padding(
                                       padding: const pw.EdgeInsets.symmetric(
                                           horizontal: 10),
-                                      child: pw.Text(
-                                          "${order.details![index].name}",
-                                          style: pw.TextStyle(font: font, fontSize: 8),
+                                      child: pw.Text(fixYa(
+                                          "${order.details![index].name}"),
+                                          style: pw.TextStyle(font: font, fontSize: 14),
                                           textAlign: pw.TextAlign.center))),
                               pw.Expanded(
                                   child: pw.Padding(
@@ -203,7 +205,7 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                                           horizontal: 10),
                                       child: pw.Text(
                                           "${order.details![index].count}",
-                                          style: pw.TextStyle(font: font, fontSize: 8),
+                                          style: pw.TextStyle(font: font, fontSize: 14),
                                           textAlign: pw.TextAlign.center))),
                             ])),
                   ]),
@@ -219,7 +221,7 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                       pw.Padding(
                         padding: const pw.EdgeInsets.symmetric(horizontal: 10),
                         child: pw.Text("اجمالي الفاتورة   /     ${order.total}",
-                            style: pw.TextStyle(font: font, fontSize: 8),
+                            style: pw.TextStyle(font: font, fontSize: 14),
                             textAlign: pw.TextAlign.left),
                       ),
                       pw.Spacer(),
@@ -227,8 +229,8 @@ buildPrintDoc(OrderModel order, font) => pw.Directionality(
                           padding:
                               const pw.EdgeInsets.symmetric(horizontal: 10),
                           child: pw.Text(
-                            "اسم المندوب    /     ${order.mandobeName ?? ""}",
-                            style: pw.TextStyle(font: font, fontSize: 8),
+                              fixYa( "اسم المندوب    /     ${order.mandobeName ?? ""}"),
+                            style: pw.TextStyle(font: font, fontSize: 14),
                           )),
                     ]),
                   ]),
@@ -253,7 +255,7 @@ buildPrintNoticeDoc(List<Map<String, dynamic>> sortedItems, font, String name) =
                       child: pw.Row(children: [
                         pw.Text("اذن صرف", style: pw.TextStyle(font: font)),
                         pw.Spacer(),
-                        pw.Text("اسم المندوب: $name",
+                        pw.Text(fixYa("اسم المندوب: $name"),
                             style: pw.TextStyle(font: font)),
                       ]),
                     ),
@@ -290,7 +292,7 @@ buildPrintNoticeDoc(List<Map<String, dynamic>> sortedItems, font, String name) =
                               pw.TableRow(children: [
                                 pw.Expanded(
                                   child: pw.Text(
-                                      "${sortedItems[index]["notes"]}",
+                            fixYa( "${sortedItems[index]["notes"]}"),
                                       style: pw.TextStyle(font: font),
                                       textAlign: pw.TextAlign.center),
                                 ),
@@ -305,8 +307,8 @@ buildPrintNoticeDoc(List<Map<String, dynamic>> sortedItems, font, String name) =
                                       padding:
                                       const pw.EdgeInsets.symmetric(
                                           horizontal: 5),
-                                      child: pw.Text(
-                                          "${sortedItems[index]["item"]}",
+                                      child: pw.Text(fixYa(
+                                          "${sortedItems[index]["item"]}"),
                                           style: pw.TextStyle(font: font),
                                           textAlign: pw.TextAlign.center)),
                                 )

@@ -1,4 +1,5 @@
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
+import 'package:drop_down_search_field/drop_down_search_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -140,33 +141,44 @@ class _AddScreenState extends State<AddScreen> {
                                     controller: cubit.phoneController,
                                     focusNode: _thirdFocusNode,
                                     maxLength: 11,
-                                    buildCounter: (BuildContext context,
-                                        {int? currentLength,
-                                        bool? isFocused,
-                                        int? maxLength}) {
-                                      return null; // إرجاع null لإخفاء العداد
+                                    buildCounter: (BuildContext context, {int? currentLength, bool? isFocused, int? maxLength}) {
+                                      return null; // إخفاء العداد
                                     },
                                     inputFormatters: <TextInputFormatter>[
                                       FilteringTextInputFormatter.digitsOnly,
                                     ],
                                     textInputAction: TextInputAction.next,
+                                    onChanged: (value) {
+                                      // تحويل الأرقام العربية إلى إنجليزية عند التغيير
+                                      String convertedValue = convertArabicToEnglishNumbers(value);
+                                      if (convertedValue != value) {
+                                        cubit.phoneController.value = TextEditingValue(
+                                          text: convertedValue,
+                                          selection: TextSelection.collapsed(offset: convertedValue.length),
+                                        );
+                                      }
+                                    },
                                     onFieldSubmitted: (_) {
-                                      FocusScope.of(context)
-                                          .requestFocus(_forthFocusNode);
+                                      FocusScope.of(context).requestFocus(_forthFocusNode);
                                     },
                                     validator: (value) {
-                                      if (value!.isEmpty) {
+                                      if (value == null || value.isEmpty) {
                                         return "يجب ادخال رقم الهاتف لاكمال المهمه";
                                       }
-                                      if (!value.startsWith("01")) {
+
+                                      // تحويل الأرقام العربية إلى إنجليزية قبل التحقق
+                                      String convertedValue = convertArabicToEnglishNumbers(value);
+
+                                      if (!convertedValue.startsWith("01")) {
                                         return "يجب ادخال رقم صحيح";
                                       }
-                                      if (value.length < 11) {
-                                        return " هذا الرقم اقل من 11 رقم يجب ادخال رقم صحيح";
+                                      if (convertedValue.length < 11) {
+                                        return "هذا الرقم أقل من 11 رقم، يجب إدخال رقم صحيح";
                                       }
+
                                       return null;
                                     },
-                                    decoration:const InputDecoration(
+                                    decoration: const InputDecoration(
                                       isDense: true,
                                       labelText: 'رقم الهاتف',
                                       border: OutlineInputBorder(),
@@ -256,41 +268,66 @@ class _AddScreenState extends State<AddScreen> {
                                 //     ),
                                 //   ),
                                 // ),
+                              // Expanded(
+                              //   child: Container(
+                              //   width: double.infinity,
+                              //   decoration: BoxDecoration(
+                              //     border: Border.all(
+                              //         width: 1, color: Colors.grey),
+                              //     borderRadius: BorderRadius.circular(5),
+                              //   ),
+                              //   child: DropdownButton<String>(
+                              //     elevation: 0,
+                              //     padding: const EdgeInsets.symmetric(horizontal: 10),
+                              //     focusNode: _cityFocusNode,
+                              //     hint:const Text("اختار المدينة"),
+                              //     isExpanded: true,
+                              //     underline: Container(),
+                              //     value: cubit.cityValue,
+                              //     style: TextStyle(
+                              //         color: defaultColor, fontSize: 18),
+                              //     onChanged: (String? value) {
+                              //       setState(() {
+                              //         cubit.cityValue = value;
+                              //         FocusScope.of(context)
+                              //             .requestFocus(usermodel!.type == "مسوق الكتروني"?_codeProductNode:_codeFocusNode);
+                              //       });
+                              //     },
+                              //     items: cubit.shippingPrice!
+                              //         .map<DropdownMenuItem<String>>(
+                              //             (ShippingPrice model) {
+                              //           return DropdownMenuItem<String>(
+                              //             value: model.governorate,
+                              //             child: Text(model.governorate!),
+                              //           );
+                              //         }).toList(),
+                              //   ),
+                              //                               ),
+                              // ),
                               Expanded(
-                                child: Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      width: 1, color: Colors.grey),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: DropdownButton<String>(
-                                  elevation: 0,
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                  focusNode: _cityFocusNode,
-                                  hint:const Text("اختار المدينة"),
-                                  isExpanded: true,
-                                  underline: Container(),
-                                  value: cubit.cityValue,
-                                  style: TextStyle(
-                                      color: defaultColor, fontSize: 18),
-                                  onChanged: (String? value) {
-                                    setState(() {
-                                      cubit.cityValue = value;
-                                      FocusScope.of(context)
-                                          .requestFocus(usermodel!.type == "مسوق الكتروني"?_codeProductNode:_codeFocusNode);
-                                    });
+                                child: DropDownSearchField(
+                                  textFieldConfiguration: TextFieldConfiguration(
+                                    controller: cubit.locationController,
+                                      style: DefaultTextStyle.of(context).style.copyWith(
+                                          fontStyle: FontStyle.italic
+                                      ),
+                                      decoration: InputDecoration(
+                                          border: OutlineInputBorder()
+                                      )
+                                  ),
+                                  suggestionsCallback: (pattern) async {
+                                    return await getSuggestions(pattern,cubit);
                                   },
-                                  items: cubit.shippingPrice!
-                                      .map<DropdownMenuItem<String>>(
-                                          (ShippingPrice model) {
-                                        return DropdownMenuItem<String>(
-                                          value: model.governorate,
-                                          child: Text(model.governorate!),
-                                        );
-                                      }).toList(),
+                                  itemBuilder: (context, suggestion) {
+                                    return ListTile(
+                                      leading: Icon(Icons.shopping_cart),
+                                      title: Text(suggestion['governorate']),
+                                    );
+                                  },
+                                  onSuggestionSelected: (suggestion) {
+
+                                  }, displayAllSuggestionWhenTap: true, isMultiSelectDropdown: false,
                                 ),
-                                                            ),
                               ),
                                 if(usermodel!.type != "مسوق الكتروني")
                                 const SizedBox(width: 10),
@@ -302,7 +339,7 @@ class _AddScreenState extends State<AddScreen> {
                                       border: Border.all(width: 1, color: Colors.grey),
                                       borderRadius: BorderRadius.circular(5),
                                     ),
-                                    child: DropdownButton<String>(
+                                    child: DropdownButton<UserModel>(
                                       focusNode: _codeFocusNode,
                                       padding: EdgeInsets.symmetric(horizontal: 10),
                                       hint: Text("اختار المسوق"),
@@ -311,17 +348,17 @@ class _AddScreenState extends State<AddScreen> {
                                       value: cubit.codeValue,
                                       style: TextStyle(
                                           color: defaultColor, fontSize: 18),
-                                      onChanged: (String? value) {
+                                      onChanged: (UserModel? value) {
                                         setState(() {
                                           cubit.codeValue = value;
                                           FocusScope.of(context)
                                               .requestFocus(_mandobeFocusNode);
                                         });
                                       },
-                                      items: cubit.code!.map<DropdownMenuItem<String>>(
+                                      items: cubit.code!.map<DropdownMenuItem<UserModel>>(
                                               (UserModel model) {
-                                            return DropdownMenuItem<String>(
-                                              value: model.name!,
+                                            return DropdownMenuItem<UserModel>(
+                                              value: model,
                                               child: Text(model.name!),
                                             );
                                           }).toList(),
@@ -339,7 +376,7 @@ class _AddScreenState extends State<AddScreen> {
                                 border: Border.all(width: 1, color: Colors.grey),
                                 borderRadius: BorderRadius.circular(5),
                               ),
-                              child: DropdownButton<String>(
+                              child: DropdownButton<UserModel>(
                                 focusNode: _mandobeFocusNode,
                                 padding: EdgeInsets.symmetric(horizontal: 10),
                                 hint: Text("اختار شركة الشحن"),
@@ -348,17 +385,17 @@ class _AddScreenState extends State<AddScreen> {
                                 value: cubit.mandobeValue,
                                 style: TextStyle(
                                     color: defaultColor, fontSize: 18),
-                                onChanged: (String? value) {
+                                onChanged: (UserModel? value) {
                                   setState(() {
                                     cubit.mandobeValue = value;
                                     FocusScope.of(context)
                                         .requestFocus(_codeProductNode);
                                   });
                                 },
-                                items: cubit.mandobe!.map<DropdownMenuItem<String>>(
+                                items: cubit.mandobe!.map<DropdownMenuItem<UserModel>>(
                                         (UserModel model) {
-                                      return DropdownMenuItem<String>(
-                                        value: model.name!,
+                                      return DropdownMenuItem<UserModel>(
+                                        value: model,
                                         child: Text(model.name!),
                                       );
                                     }).toList(),
@@ -525,17 +562,35 @@ class _AddScreenState extends State<AddScreen> {
                                       onFieldSubmitted: (_) {
                                         if (cubit
                                             .priceController.text.isEmpty) {
-                                          cubit.priceController.text = "0";
+                                          cubit.priceController.text = "${(int.parse(cubit.giftValue!.price!)+int.parse(cubit.giftValue!.price2!))}";
                                           FocusScope.of(context).requestFocus(
                                               _detailsFocusNode);
                                         } else {
-                                          FocusScope.of(context).requestFocus(
-                                              _detailsFocusNode);
+                                          if(int.parse(cubit.priceController.text)<(int.parse(cubit.giftValue!.price!)+int.parse(cubit.giftValue!.price2!))){
+                                            dialog(context, onTap: () {
+                                              FocusScope.of(context).requestFocus(
+                                                  _priceFocusNode);
+                                              Navigator.pop(context);
+                                            }, onCancelTap: () {
+                                              FocusScope.of(context).requestFocus(
+                                                  _priceFocusNode);
+                                              Navigator.pop(context);
+                                            },
+                                                icon: Icons.info_outline,
+                                                onPressedTitle: "حسنا",
+                                                subTitle:
+                                                "هذا السعر اقل من سعر المنتج السعر هو ${(int.parse(cubit.giftValue!.price!)+int.parse(cubit.giftValue!.price2!))} ",
+                                                bigTitle: "",
+                                                iconColor: defaultColor);
+                                          }else{
+                                            FocusScope.of(context).requestFocus(
+                                                _detailsFocusNode);
+                                          }
                                         }
                                       },
                                       validator: (value) {
                                         if (value!.isEmpty) {
-                                          return "يجب ادخال العنوان لاكمال المهمه";
+                                          return "يجب ادخال السعر لاكمال المهمه";
                                         }
                                         return null;
                                       },
@@ -556,108 +611,61 @@ class _AddScreenState extends State<AddScreen> {
                                       focusNode: _detailsFocusNode,
                                       textInputAction: TextInputAction.next,
                                       onFieldSubmitted: (_) {
-                                        if (cubit
-                                            .detailsController.text.isEmpty) {
-                                          cubit.detailsController.text = " ";
-                                          if (formKey.currentState!
-                                              .validate()) {
-                                            OrderDetailsModel newProduct =
-                                                OrderDetailsModel(
-                                              name: cubit.giftValue!.name,
-                                              id: cubit.giftValue!.id,
-                                                  total:int.parse(
-                                                      cubit.priceController.text)* int.parse(cubit
-                                                      .quantityController.text),
-                                              details: cubit
-                                                  .detailsController.text,
-                                              price: int.parse(
-                                                  cubit.priceController.text),
-                                              count: int.parse(cubit
-                                                  .quantityController.text),
-                                              code: int.parse(cubit
-                                                  .codeProductController
-                                                  .text),
-                                            );
-                                            if (!cubit.giftList
-                                                .contains(newProduct)) {
-                                              FocusScope.of(context)
-                                                  .requestFocus(
-                                                  _quantityFocusNode);
-                                              cubit.addToList(
-                                                  orderDetailsModel:
-                                                      newProduct);
-                                              cubit.quantityController.text =
-                                                  "";
-                                              cubit.codeProductController
-                                                  .text = "";
-                                              cubit.priceController.text = "";
-                                              cubit.detailsController.text =
-                                                  "";
-                                              cubit.giftValue = null;
-                                            } else {
-                                              FocusScope.of(context)
-                                                  .requestFocus(
-                                                      _codeProductNode);
-
-                                            }
+                                        if(int.parse(cubit.priceController.text)<(int.parse(cubit.giftValue!.price!)+int.parse(cubit.giftValue!.price2!))){
+                                          dialog(context, onTap: () {
+                                            FocusScope.of(context).requestFocus(
+                                                _priceFocusNode);
+                                            Navigator.pop(context);
+                                          }, onCancelTap: () {
+                                            FocusScope.of(context).requestFocus(
+                                                _priceFocusNode);
+                                            Navigator.pop(context);
+                                          },
+                                              icon: Icons.info_outline,
+                                              onPressedTitle: "حسنا",
+                                              subTitle:
+                                              "هذا السعر اقل من سعر المنتج السعر هو ${(int.parse(cubit.giftValue!.price!)+int.parse(cubit.giftValue!.price2!))} ",
+                                              bigTitle: "",
+                                              iconColor: defaultColor);
+                                        }else{
+                                          if (cubit.detailsController.text.isEmpty) {
+                                            cubit.detailsController.text = " ";
                                           }
-                                        } else {
-                                          if (formKey.currentState!
-                                              .validate()) {
-                                            OrderDetailsModel newProduct =
-                                                OrderDetailsModel(
+                                          if (formKey.currentState!.validate()) {
+                                            OrderDetailsModel newProduct = OrderDetailsModel(
                                               name: cubit.giftValue!.name,
+                                              oldPrice: int.parse(cubit.giftValue!.price!) + int.parse(cubit.giftValue!.price2!),
                                               id: cubit.giftValue!.id,
-                                              total:int.parse(
-                                                  cubit.priceController.text)* int.parse(cubit
-                                                  .quantityController.text),
-                                              details: cubit
-                                                  .detailsController.text,
-                                              price: int.parse(
-                                                  cubit.priceController.text),
-                                              count: int.parse(cubit
-                                                  .quantityController.text),
-                                              code: int.parse(cubit
-                                                  .codeProductController
-                                                  .text),
+                                              uid: cubit.giftValue!.uid,
+                                              nameAdd: cubit.giftValue!.nameAdd,
+                                              link: cubit.giftValue!.link,
+                                              total: int.parse(cubit.priceController.text) * int.parse(cubit.quantityController.text),
+                                              details: cubit.detailsController.text,
+                                              price: int.parse(cubit.priceController.text),
+                                              count: int.parse(cubit.quantityController.text),
+                                              code: cubit.giftValue!.code,
+                                                tagerPrice:int.parse(cubit.giftValue!.price!)
                                             );
-                                            if (!cubit.giftList
-                                                .contains(newProduct)) {
-                                              FocusScope.of(context)
-                                                  .requestFocus(
-                                                  _quantityFocusNode);
-                                              cubit.addToList(
-                                                  orderDetailsModel:
-                                                      newProduct);
-                                              cubit.quantityController.text =
-                                                  "";
-                                              cubit.codeProductController
-                                                  .text = "";
-                                              cubit.priceController.text = "";
-                                              cubit.detailsController.text =
-                                                  "";
+                                            if (!cubit.giftList.contains(newProduct)) {
+                                              FocusScope.of(context).requestFocus(_codeProductNode);
+                                              cubit.addToList(orderDetailsModel: newProduct);
+                                              cubit.quantityController.clear();
+                                              cubit.codeProductController.clear();
+                                              cubit.priceController.clear();
+                                              cubit.detailsController.clear();
                                               cubit.giftValue = null;
                                             } else {
-                                              FocusScope.of(context)
-                                                  .requestFocus(
-                                                      _codeProductNode);
-                                              dialog(context, onTap: () {
-                                                FocusScope.of(context)
-                                                    .requestFocus(
-                                                        _codeProductNode);
-                                                Navigator.pop(context);
-                                              }, onCancelTap: () {
-                                                FocusScope.of(context)
-                                                    .requestFocus(
-                                                        _codeProductNode);
-                                                Navigator.pop(context);
-                                              },
-                                                  icon: Icons.info_outline,
-                                                  onPressedTitle: "حسنا",
-                                                  subTitle:
-                                                      "هذا الصنف موجود في القائمة",
-                                                  bigTitle: "",
-                                                  iconColor: defaultColor);
+                                              FocusScope.of(context).requestFocus(_codeProductNode);
+                                              dialog(
+                                                context,
+                                                onTap: () => Navigator.pop(context),
+                                                onCancelTap: () => Navigator.pop(context),
+                                                icon: Icons.info_outline,
+                                                onPressedTitle: "حسنا",
+                                                subTitle: "هذا الصنف موجود في القائمة",
+                                                bigTitle: "",
+                                                iconColor: defaultColor,
+                                              );
                                             }
                                           }
                                         }
@@ -1016,8 +1024,12 @@ class _AddScreenState extends State<AddScreen> {
                                               address:
                                                   cubit.addressController.text,
                                               mandobeName:
-                                                  cubit.mandobeValue ?? "",
-                                              code: usermodel!.type == "مسوق الكتروني"?usermodel!.name! :cubit.codeValue ?? "",
+                                              cubit.mandobeValue!.name ?? "",
+                                                uIdMandobeName:
+                                                cubit.mandobeValue!.uId ?? "",
+                                              uIdCode: usermodel!.type == "مسوق الكتروني"?usermodel!.uId! :cubit.codeValue!.uId ?? "",
+                                              priceCity: cubit.cityPrice,
+                                              code: usermodel!.type == "مسوق الكتروني"?usermodel!.name! :cubit.codeValue!.name ?? "",
                                               total: cubit.totalController.text,
                                               dateTime: date.toString(),
                                               city: cubit.cityValue!
@@ -1288,4 +1300,23 @@ class _AddScreenState extends State<AddScreen> {
       );
     });
   }
+  Future<List<Map<String, dynamic>>> getSuggestions(String pattern,AppCubit cubit) async {
+    return cubit.shippingPrice!
+        .where((item) => item.governorate!.toLowerCase().contains(pattern.toLowerCase()))
+        .map((item) => {
+      'governorate': item.governorate,
+      'price': item.price, // يمكن إضافة المزيد من البيانات
+    })
+        .toList();
+  }
+  String convertArabicToEnglishNumbers(String input) {
+    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+    for (int i = 0; i < arabicNumbers.length; i++) {
+      input = input.replaceAll(arabicNumbers[i], englishNumbers[i]);
+    }
+    return input;
+  }
+
 }
